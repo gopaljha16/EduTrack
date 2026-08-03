@@ -1,0 +1,446 @@
+<div class="p-8 max-w-5xl mx-auto">
+  <!-- Back Button -->
+  <a routerLink="/students" class="inline-flex items-center gap-2 text-slate-400 hover:text-white text-sm mb-6 transition-colors">
+    <i class="fa-solid fa-arrow-left"></i> Back to Students
+  </a>
+
+  @if (isLoading) {
+    <div class="flex items-center justify-center h-64">
+      <div class="w-10 h-10 border-4 border-dark-600 border-t-brand-500 rounded-full animate-spin"></div>
+    </div>
+  } @else if (student) {
+    <!-- Profile Header Card -->
+    <div class="card p-6 mb-6 flex items-center gap-6 flex-wrap">
+      <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-white text-2xl font-bold flex-shrink-0 shadow-glow-sm"
+           [style.background]="getAvatarColor(student.name)">
+        {{ getInitials(student.name) }}
+      </div>
+      <div class="flex-1 min-w-0">
+        <h1 class="font-heading text-2xl font-bold text-white">{{ student.name }}</h1>
+        <div class="flex items-center gap-2.5 mt-1.5 flex-wrap">
+          <span class="badge" [class]="student.status === 'Active' ? 'badge-active' : student.status === 'Graduated' ? 'badge-graduated' : 'badge-inactive'">
+            {{ student.status }}
+          </span>
+          <span class="badge" [class]="student.feeStatus === 'Paid' ? 'badge-paid' : student.feeStatus === 'Overdue' ? 'badge-overdue' : 'badge-pending'">
+            {{ student.feeStatus }}
+          </span>
+          <span class="text-slate-500 text-sm flex items-center gap-1.5">
+            <i class="fa-solid fa-envelope text-xs"></i> {{ student.email }}
+          </span>
+        </div>
+      </div>
+      <div class="flex gap-3">
+        <a [routerLink]="['/students', student._id, 'edit']" class="btn btn-ghost btn-sm">
+          <i class="fa-solid fa-pen-to-square"></i> Edit Profile
+        </a>
+        <button (click)="showConfirm = true" class="btn btn-danger btn-sm">
+          <i class="fa-solid fa-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs Navigation Bar -->
+    <div class="border-b border-white/[0.06] flex gap-2 mb-6 overflow-x-auto pb-px">
+      <button (click)="activeTab = 'overview'"
+              class="px-5 py-3 border-b-2 font-heading text-sm font-semibold transition-all duration-200"
+              [class]="activeTab === 'overview' ? 'border-brand-500 text-brand-400' : 'border-transparent text-slate-400 hover:text-slate-200'">
+        Overview
+      </button>
+      <button (click)="activeTab = 'grades'"
+              class="px-5 py-3 border-b-2 font-heading text-sm font-semibold transition-all duration-200"
+              [class]="activeTab === 'grades' ? 'border-brand-500 text-brand-400' : 'border-transparent text-slate-400 hover:text-slate-200'">
+        Grades & Marks
+      </button>
+      <button (click)="activeTab = 'fees'"
+              class="px-5 py-3 border-b-2 font-heading text-sm font-semibold transition-all duration-200"
+              [class]="activeTab === 'fees' ? 'border-brand-500 text-brand-400' : 'border-transparent text-slate-400 hover:text-slate-200'">
+        Fee Ledger
+      </button>
+      <button (click)="activeTab = 'attendance'"
+              class="px-5 py-3 border-b-2 font-heading text-sm font-semibold transition-all duration-200"
+              [class]="activeTab === 'attendance' ? 'border-brand-500 text-brand-400' : 'border-transparent text-slate-400 hover:text-slate-200'">
+        Attendance Log
+      </button>
+    </div>
+
+    <!-- ===== TAB CONTENT PANELS ===== -->
+
+    <!-- PANEL 1: OVERVIEW -->
+    @if (activeTab === 'overview') {
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 animate-fade-in">
+        <!-- Personal Details -->
+        <div class="card p-6">
+          <h2 class="font-heading font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-user text-brand-400 text-sm"></i> Personal Details
+          </h2>
+          <div class="space-y-4">
+            <div class="flex justify-between items-center py-2 border-b border-white/[0.05]">
+              <span class="text-xs text-slate-500 uppercase tracking-wide">Age</span>
+              <span class="text-sm text-slate-200 font-medium">{{ student.age }} years</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-white/[0.05]">
+              <span class="text-xs text-slate-500 uppercase tracking-wide">Gender</span>
+              <span class="text-sm text-slate-200 font-medium">{{ student.gender || 'Male' }}</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-white/[0.05]">
+              <span class="text-xs text-slate-500 uppercase tracking-wide">Phone</span>
+              <span class="text-sm text-slate-200 font-mono">{{ student.phone }}</span>
+            </div>
+            <div class="flex justify-between items-start py-2">
+              <span class="text-xs text-slate-500 uppercase tracking-wide">Address</span>
+              <span class="text-sm text-slate-200 text-right max-w-[60%]">{{ student.address }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Academic Details -->
+        <div class="card p-6">
+          <h2 class="font-heading font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-graduation-cap text-cyan-400 text-sm"></i> Academic Details
+          </h2>
+          <div class="space-y-4">
+            <div class="flex justify-between items-center py-2 border-b border-white/[0.05]">
+              <span class="text-xs text-slate-500 uppercase tracking-wide">Class / Grade</span>
+              <span class="badge bg-brand-500/10 text-brand-400 border border-brand-500/20">{{ student.studentClass }}</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-white/[0.05]">
+              <span class="text-xs text-slate-500 uppercase tracking-wide">Roll No.</span>
+              <span class="text-sm text-slate-200 font-medium">{{ student.rollNumber || '—' }}</span>
+            </div>
+            <div class="flex justify-between items-center py-2 border-b border-white/[0.05]">
+              <span class="text-xs text-slate-500 uppercase tracking-wide">Admission Date</span>
+              <span class="text-sm text-slate-200">{{ student.admissionDate ? (student.admissionDate | date:'mediumDate') : '—' }}</span>
+            </div>
+            <div class="flex justify-between items-center py-2">
+              <span class="text-xs text-slate-500 uppercase tracking-wide">Register Status</span>
+              <span class="badge" [class]="student.status === 'Active' ? 'badge-active' : student.status === 'Graduated' ? 'badge-graduated' : 'badge-inactive'">
+                {{ student.status || 'Active' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Parent Details -->
+        <div class="card p-6 md:col-span-2">
+          <h2 class="font-heading font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-people-roof text-emerald-400 text-sm"></i> Parent / Guardian Contacts
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <span class="text-xs text-slate-500 uppercase tracking-wide block mb-1">Parent Name</span>
+              <span class="text-sm text-slate-200 font-medium">{{ student.parentName || '—' }}</span>
+            </div>
+            <div>
+              <span class="text-xs text-slate-500 uppercase tracking-wide block mb-1">Parent Phone</span>
+              <span class="text-sm text-slate-200 font-mono font-medium">{{ student.parentPhone || '—' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- PANEL 2: GRADES -->
+    @if (activeTab === 'grades') {
+      <div class="space-y-6 animate-fade-in">
+        <!-- Summary Dashboard & Button -->
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div class="card px-5 py-4 flex items-center gap-4 bg-gradient-brand/5 border-brand-500/20">
+            <div class="w-10 h-10 rounded-lg bg-gradient-purple flex items-center justify-center text-white"><i class="fa-solid fa-chart-line"></i></div>
+            <div>
+              <div class="font-heading text-2xl font-bold text-white">{{ overallPercentage }}%</div>
+              <div class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Overall Aggregate</div>
+            </div>
+          </div>
+          <button (click)="showAddGradeModal = true" class="btn btn-primary" id="add-grade-btn">
+            <i class="fa-solid fa-plus"></i> Add Term Marks
+          </button>
+        </div>
+
+        <!-- Grades Table -->
+        <div class="table-container">
+          <table class="w-full">
+            <thead>
+              <tr>
+                <th class="table-th">Subject</th>
+                <th class="table-th">Exam Term</th>
+                <th class="table-th">Score</th>
+                <th class="table-th">Pct %</th>
+                <th class="table-th">Grade</th>
+                <th class="table-th">Exam Date</th>
+                <th class="table-th">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (g of grades; track g._id) {
+                <tr class="table-row">
+                  <td class="table-td font-semibold text-slate-100">{{ g.subject }}</td>
+                  <td class="table-td text-slate-400">{{ g.term }}</td>
+                  <td class="table-td font-mono font-medium text-slate-200">{{ g.marksObtained }} / {{ g.maxMarks }}</td>
+                  <td class="table-td font-mono text-slate-300">{{ g.percentage }}%</td>
+                  <td class="table-td">
+                    <span class="badge" [class]="getGradeBadgeClass(g.letterGrade)">{{ g.letterGrade }}</span>
+                  </td>
+                  <td class="table-td text-slate-500 text-xs">{{ g.examDate | date:'mediumDate' }}</td>
+                  <td class="table-td">
+                    <button (click)="deleteGrade(g._id)" class="btn btn-sm btn-icon bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20" title="Delete record">
+                      <i class="fa-solid fa-trash text-xs"></i>
+                    </button>
+                  </td>
+                </tr>
+              }
+              @empty {
+                <tr>
+                  <td colspan="7" class="py-16 text-center text-slate-500">
+                    <div class="text-3xl mb-2 text-slate-600"><i class="fa-solid fa-square-poll-vertical"></i></div>
+                    <p class="text-sm">No academic marks recorded yet for this student.</p>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- PANEL 3: FEES -->
+    @if (activeTab === 'fees') {
+      <div class="space-y-6 animate-fade-in">
+        <!-- Stats summary -->
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div class="flex gap-4">
+            <div class="card px-5 py-4 flex items-center gap-4 bg-emerald-500/5 border-emerald-500/20">
+              <div class="w-10 h-10 rounded-lg bg-gradient-green flex items-center justify-center text-white"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+              <div>
+                <div class="font-heading text-2xl font-bold text-white">{{ totalPaid | currency:'INR':'symbol':'1.0-0' }}</div>
+                <div class="text-[10px] text-slate-500 uppercase tracking-wider font-semibold">Total Amount Paid</div>
+              </div>
+            </div>
+          </div>
+          <button (click)="showAddPaymentModal = true" class="btn btn-success" id="add-payment-btn">
+            <i class="fa-solid fa-receipt"></i> Log Fee Payment
+          </button>
+        </div>
+
+        <!-- Payments list -->
+        <div class="table-container">
+          <table class="w-full">
+            <thead>
+              <tr>
+                <th class="table-th">Receipt ID</th>
+                <th class="table-th">Method</th>
+                <th class="table-th">Amount</th>
+                <th class="table-th">Ref No.</th>
+                <th class="table-th">Payment Date</th>
+                <th class="table-th">Notes</th>
+                <th class="table-th">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (p of payments; track p._id) {
+                <tr class="table-row">
+                  <td class="table-td font-mono text-slate-500 text-xs">{{ p._id.slice(-8).toUpperCase() }}</td>
+                  <td class="table-td">
+                    <span class="badge bg-slate-500/10 text-slate-300 border border-slate-500/20">{{ p.paymentMethod }}</span>
+                  </td>
+                  <td class="table-td font-heading font-bold text-emerald-400">{{ p.amount | currency:'INR':'symbol':'1.0-0' }}</td>
+                  <td class="table-td font-mono text-slate-400 text-xs">{{ p.referenceNumber || '—' }}</td>
+                  <td class="table-td text-slate-500 text-xs">{{ p.paymentDate | date:'mediumDate' }}</td>
+                  <td class="table-td text-xs text-slate-400 italic max-w-[150px] truncate" [title]="p.remarks">{{ p.remarks || '—' }}</td>
+                  <td class="table-td">
+                    <button (click)="deletePayment(p._id)" class="btn btn-sm btn-icon bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20" title="Remove record">
+                      <i class="fa-solid fa-trash text-xs"></i>
+                    </button>
+                  </td>
+                </tr>
+              }
+              @empty {
+                <tr>
+                  <td colspan="7" class="py-16 text-center text-slate-500">
+                    <div class="text-3xl mb-2 text-slate-600"><i class="fa-solid fa-receipt"></i></div>
+                    <p class="text-sm">No transaction payment history logged.</p>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- PANEL 4: ATTENDANCE -->
+    @if (activeTab === 'attendance') {
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in">
+        <!-- Summary Stats Card -->
+        <div class="card p-6 flex flex-col justify-between">
+          <div>
+            <h3 class="font-heading font-semibold text-white mb-4 flex items-center gap-2">
+              <i class="fa-solid fa-square-poll-vertical text-brand-400"></i> Summary Rate
+            </h3>
+            <div class="text-center py-6">
+              <div class="text-5xl font-heading font-extrabold text-brand-400">{{ attendanceStats?.rate || '100.0' }}%</div>
+              <p class="text-xs text-slate-500 uppercase tracking-widest mt-1.5 font-bold">Present Rate Ratio</p>
+            </div>
+          </div>
+          <div class="space-y-2 border-t border-white/[0.05] pt-4 text-sm text-slate-400">
+            <div class="flex justify-between"><span>Present Days</span><span class="text-slate-200 font-bold font-mono">{{ attendanceStats?.present || 0 }}</span></div>
+            <div class="flex justify-between"><span>Late Marks</span><span class="text-slate-200 font-bold font-mono">{{ attendanceStats?.late || 0 }}</span></div>
+            <div class="flex justify-between"><span>Absent Days</span><span class="text-slate-200 font-bold font-mono">{{ attendanceStats?.absent || 0 }}</span></div>
+            <div class="flex justify-between"><span>Total Logs</span><span class="text-slate-200 font-bold font-mono">{{ attendanceStats?.total || 0 }}</span></div>
+          </div>
+        </div>
+
+        <!-- History Ledger Table -->
+        <div class="md:col-span-2 table-container">
+          <div class="px-6 py-4 border-b border-white/[0.06] font-semibold text-white text-sm">Attendance Logs</div>
+          <div class="max-h-[360px] overflow-y-auto">
+            <table class="w-full">
+              <thead>
+                <tr>
+                  <th class="table-th">Date</th>
+                  <th class="table-th">Status</th>
+                  <th class="table-th">Remarks</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (a of attendanceRecords; track a._id) {
+                  <tr class="table-row">
+                    <td class="table-td text-sm font-medium text-slate-200">{{ a.date | date:'longDate' }}</td>
+                    <td class="table-td">
+                      <span class="badge"
+                            [class.badge-active]="a.status === 'Present'"
+                            [class.badge-pending]="a.status === 'Late'"
+                            [class.badge-overdue]="a.status === 'Absent'">
+                        {{ a.status }}
+                      </span>
+                    </td>
+                    <td class="table-td text-xs text-slate-400 italic">{{ a.remarks || '—' }}</td>
+                  </tr>
+                }
+                @empty {
+                  <tr>
+                    <td colspan="3" class="py-16 text-center text-slate-500">
+                      <p class="text-sm">No attendance records have been registered yet.</p>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    }
+  }
+</div>
+
+<!-- ===== MODAL DIALOGS ===== -->
+
+<!-- Grade Entry Modal -->
+@if (showAddGradeModal) {
+  <div class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in" id="add-grade-modal">
+    <div class="card max-w-md w-full p-6 shadow-2xl animate-slide-up">
+      <div class="flex items-center justify-between mb-5 border-b border-white/[0.06] pb-3">
+        <h3 class="font-heading text-lg font-bold text-white"><i class="fa-solid fa-plus text-brand-400"></i> Add Student Marks</h3>
+        <button (click)="closeGradeModal()" class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="form-label mb-1.5">Subject Name</label>
+          <input type="text" [(ngModel)]="newGrade.subject" class="form-control py-2.5" placeholder="e.g. Mathematics, Physics" id="grade-subject"/>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="form-label mb-1.5">Obtained Marks</label>
+            <input type="number" [(ngModel)]="newGrade.marksObtained" class="form-control py-2.5" placeholder="e.g. 85" id="grade-marks"/>
+          </div>
+          <div>
+            <label class="form-label mb-1.5">Max Marks</label>
+            <input type="number" [(ngModel)]="newGrade.maxMarks" class="form-control py-2.5" placeholder="100" id="grade-max"/>
+          </div>
+        </div>
+        <div>
+          <label class="form-label mb-1.5">Exam Term</label>
+          <select [(ngModel)]="newGrade.term" class="form-control py-2.5" id="grade-term">
+            <option value="Midterm">Midterm Exam</option>
+            <option value="Final">Final Exam</option>
+            <option value="Unit Test 1">Unit Test 1</option>
+            <option value="Unit Test 2">Unit Test 2</option>
+            <option value="Assignment">Practical Assignment</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label mb-1.5">Remarks / Feedback</label>
+          <input type="text" [(ngModel)]="newGrade.remarks" class="form-control py-2.5" placeholder="Optional comments..." id="grade-remarks"/>
+        </div>
+      </div>
+
+      <div class="flex gap-3 justify-end mt-6">
+        <button (click)="closeGradeModal()" class="btn btn-ghost">Cancel</button>
+        <button (click)="addGrade()" class="btn btn-primary" id="save-grade-btn">Add Record</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Fee Ledger Payment Modal -->
+@if (showAddPaymentModal) {
+  <div class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in" id="add-payment-modal">
+    <div class="card max-w-md w-full p-6 shadow-2xl animate-slide-up">
+      <div class="flex items-center justify-between mb-5 border-b border-white/[0.06] pb-3">
+        <h3 class="font-heading text-lg font-bold text-white"><i class="fa-solid fa-receipt text-emerald-400"></i> Record Fee Payment</h3>
+        <button (click)="closePaymentModal()" class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="form-label mb-1.5">Amount Paid (INR)</label>
+          <input type="number" [(ngModel)]="newPayment.amount" class="form-control py-2.5" placeholder="e.g. 5000" id="payment-amount"/>
+        </div>
+        <div>
+          <label class="form-label mb-1.5">Payment Method</label>
+          <select [(ngModel)]="newPayment.paymentMethod" class="form-control py-2.5" id="payment-method">
+            <option value="Online">Online Payment Gateway</option>
+            <option value="Cash">Cash payment</option>
+            <option value="Card">Credit / Debit Card</option>
+            <option value="Bank Transfer">Direct Bank Transfer</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label mb-1.5">Reference Number</label>
+          <input type="text" [(ngModel)]="newPayment.referenceNumber" class="form-control py-2.5" placeholder="Transaction ID, Cheque No..." id="payment-ref"/>
+        </div>
+        <div>
+          <label class="form-label mb-1.5">Remarks</label>
+          <input type="text" [(ngModel)]="newPayment.remarks" class="form-control py-2.5" placeholder="Optional notes..." id="payment-remarks"/>
+        </div>
+      </div>
+
+      <div class="flex gap-3 justify-end mt-6">
+        <button (click)="closePaymentModal()" class="btn btn-ghost">Cancel</button>
+        <button (click)="addPayment()" class="btn btn-success" id="save-payment-btn">Record Payment</button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Delete Student Confirm Modal -->
+@if (showConfirm) {
+  <div class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+    <div class="card max-w-sm w-full p-8 text-center border-red-500/20 shadow-2xl animate-slide-up">
+      <div class="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-3xl text-red-400 mx-auto mb-5">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h3 class="font-heading text-xl font-bold text-white mb-2">Delete Student?</h3>
+      <p class="text-slate-400 text-sm mb-6 leading-relaxed">
+        Are you sure you want to remove <strong class="text-slate-200">{{ student?.name }}</strong>?
+        This action cannot be undone and will delete all associated attendance, grades, and payment ledger files.
+      </p>
+      <div class="flex gap-3 justify-center">
+        <button (click)="showConfirm = false" class="btn btn-ghost">Cancel</button>
+        <button (click)="deleteStudent()" class="btn btn-danger">
+          <i class="fa-solid fa-trash"></i> Yes, Delete
+        </button>
+      </div>
+    </div>
+  </div>
+}

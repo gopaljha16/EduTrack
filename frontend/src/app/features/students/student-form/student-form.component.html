@@ -1,0 +1,171 @@
+<div class="p-8 max-w-3xl mx-auto">
+  <a routerLink="/students" class="inline-flex items-center gap-2 text-slate-400 hover:text-white text-sm mb-6 transition-colors">
+    <i class="fa-solid fa-arrow-left"></i> Back to Students
+  </a>
+
+  <div class="mb-6">
+    <h1 class="font-heading text-3xl font-bold text-white">
+      {{ isEdit ? 'Edit Student' : 'Enroll New Student' }}
+    </h1>
+    <p class="text-slate-400 text-sm mt-1">{{ isEdit ? 'Update the student\'s information below.' : 'Fill in the details to enroll a new student.' }}</p>
+  </div>
+
+  @if (isFetching) {
+    <div class="flex items-center justify-center h-48">
+      <div class="w-10 h-10 border-4 border-dark-600 border-t-brand-500 rounded-full animate-spin"></div>
+    </div>
+  } @else {
+    <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+
+      <!-- Personal Details -->
+      <div class="card p-6 mb-5">
+        <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-5 flex items-center gap-2">
+          <span class="w-0.5 h-4 bg-gradient-brand rounded inline-block"></span>
+          Personal Details
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+          <!-- Name -->
+          <div class="form-group">
+            <label class="form-label mb-2" for="f-name"><i class="fa-solid fa-user"></i> Full Name</label>
+            <input id="f-name" type="text" formControlName="name" class="form-control"
+                   [class.border-red-500/50]="f('name')?.invalid && f('name')?.touched"
+                   placeholder="e.g. Rahul Sharma" />
+            @if (f('name')?.invalid && f('name')?.touched) {
+              <p class="form-error"><i class="fa-solid fa-circle-exclamation"></i> Name required (min 2 chars).</p>
+            }
+          </div>
+
+          <!-- Age -->
+          <div>
+            <label class="form-label mb-2" for="f-age"><i class="fa-solid fa-cake-candles"></i> Age</label>
+            <input id="f-age" type="number" formControlName="age" class="form-control"
+                   [class.border-red-500/50]="f('age')?.invalid && f('age')?.touched" placeholder="e.g. 18" />
+            @if (f('age')?.invalid && f('age')?.touched) {
+              <p class="form-error"><i class="fa-solid fa-circle-exclamation"></i> Valid age (1–100) required.</p>
+            }
+          </div>
+
+          <!-- Gender -->
+          <div>
+            <label class="form-label mb-2" for="f-gender"><i class="fa-solid fa-venus-mars"></i> Gender</label>
+            <select id="f-gender" formControlName="gender" class="form-control">
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <!-- Phone -->
+          <div>
+            <label class="form-label mb-2" for="f-phone"><i class="fa-solid fa-phone"></i> Phone</label>
+            <input id="f-phone" type="tel" formControlName="phone" class="form-control"
+                   [class.border-red-500/50]="f('phone')?.invalid && f('phone')?.touched" placeholder="10-digit number" />
+            @if (f('phone')?.invalid && f('phone')?.touched) {
+              <p class="form-error"><i class="fa-solid fa-circle-exclamation"></i> 10-digit phone required.</p>
+            }
+          </div>
+
+          <!-- Email -->
+          <div class="md:col-span-2">
+            <label class="form-label mb-2" for="f-email"><i class="fa-solid fa-envelope"></i> Email</label>
+            <input id="f-email" type="email" formControlName="email" class="form-control"
+                   [class.border-red-500/50]="f('email')?.invalid && f('email')?.touched" placeholder="student@email.com" />
+            @if (f('email')?.invalid && f('email')?.touched) {
+              <p class="form-error"><i class="fa-solid fa-circle-exclamation"></i> Valid email required.</p>
+            }
+          </div>
+
+          <!-- Address -->
+          <div class="md:col-span-2">
+            <label class="form-label mb-2" for="f-address"><i class="fa-solid fa-location-dot"></i> Address</label>
+            <input id="f-address" type="text" formControlName="address" class="form-control"
+                   [class.border-red-500/50]="f('address')?.invalid && f('address')?.touched" placeholder="Full address" />
+            @if (f('address')?.invalid && f('address')?.touched) {
+              <p class="form-error"><i class="fa-solid fa-circle-exclamation"></i> Address required.</p>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Academic Details -->
+      <div class="card p-6 mb-5">
+        <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-5 flex items-center gap-2">
+          <span class="w-0.5 h-4 bg-gradient-cyan rounded inline-block"></span>
+          Academic & Status
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+          <div>
+            <label class="form-label mb-2" for="f-class"><i class="fa-solid fa-chalkboard"></i> Class / Grade</label>
+            <input id="f-class" type="text" formControlName="studentClass" class="form-control"
+                   [class.border-red-500/50]="f('studentClass')?.invalid && f('studentClass')?.touched" placeholder="e.g. 10th, BSc Year 2" />
+            @if (f('studentClass')?.invalid && f('studentClass')?.touched) {
+              <p class="form-error"><i class="fa-solid fa-circle-exclamation"></i> Class required.</p>
+            }
+          </div>
+
+          <div>
+            <label class="form-label mb-2" for="f-roll"><i class="fa-solid fa-id-badge"></i> Roll Number</label>
+            <input id="f-roll" type="text" formControlName="rollNumber" class="form-control" placeholder="Optional" />
+          </div>
+
+          <div>
+            <label class="form-label mb-2" for="f-admission"><i class="fa-solid fa-calendar"></i> Admission Date</label>
+            <input id="f-admission" type="date" formControlName="admissionDate" class="form-control" />
+          </div>
+
+          <div>
+            <label class="form-label mb-2" for="f-status"><i class="fa-solid fa-circle-dot"></i> Status</label>
+            <select id="f-status" formControlName="status" class="form-control">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Graduated">Graduated</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label mb-2" for="f-fee"><i class="fa-solid fa-indian-rupee-sign"></i> Fee Status</label>
+            <select id="f-fee" formControlName="feeStatus" class="form-control">
+              <option value="Pending">Pending</option>
+              <option value="Paid">Paid</option>
+              <option value="Overdue">Overdue</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Parent Details -->
+      <div class="card p-6 mb-6">
+        <h2 class="text-xs font-bold text-slate-500 uppercase tracking-widest mb-5 flex items-center gap-2">
+          <span class="w-0.5 h-4 bg-gradient-green rounded inline-block"></span>
+          Parent / Guardian (Optional)
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label class="form-label mb-2" for="f-pname"><i class="fa-solid fa-user-tie"></i> Parent Name</label>
+            <input id="f-pname" type="text" formControlName="parentName" class="form-control" placeholder="Optional" />
+          </div>
+          <div>
+            <label class="form-label mb-2" for="f-pphone"><i class="fa-solid fa-phone"></i> Parent Phone</label>
+            <input id="f-pphone" type="tel" formControlName="parentPhone" class="form-control" placeholder="Optional" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit -->
+      <div class="flex items-center gap-4">
+        <button id="submit-student" type="submit" class="btn btn-primary px-8 py-3" [disabled]="isLoading">
+          @if (isLoading) {
+            <i class="fa-solid fa-spinner fa-spin"></i> {{ isEdit ? 'Saving...' : 'Enrolling...' }}
+          } @else {
+            <i class="fa-solid {{ isEdit ? 'fa-floppy-disk' : 'fa-user-plus' }}"></i>
+            {{ isEdit ? 'Save Changes' : 'Enroll Student' }}
+          }
+        </button>
+        <a routerLink="/students" class="btn btn-ghost">Cancel</a>
+      </div>
+
+    </form>
+  }
+</div>

@@ -1,0 +1,166 @@
+<div class="p-8">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+    <div>
+      <h1 class="font-heading text-3xl font-bold text-white">Students</h1>
+      <p class="text-slate-400 text-sm mt-1">Manage all enrolled student records</p>
+    </div>
+    <div class="flex items-center gap-3">
+      <button (click)="exportCsv()" class="btn btn-ghost">
+        <i class="fa-solid fa-download"></i> Export CSV
+      </button>
+      <a routerLink="/students/new" class="btn btn-primary">
+        <i class="fa-solid fa-plus"></i> Enroll Student
+      </a>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="card p-4 mb-6">
+    <div class="flex flex-wrap gap-3">
+      <!-- Search -->
+      <div class="input-wrapper flex-1 min-w-[220px]">
+        <i class="input-icon fa-solid fa-magnifying-glass"></i>
+        <input type="text" [(ngModel)]="search" (ngModelChange)="applyFilters()"
+               class="form-control input-with-icon" placeholder="Search by name, email, phone..." id="student-search"/>
+      </div>
+      <!-- Class Filter -->
+      <select [(ngModel)]="filterClass" (ngModelChange)="applyFilters()" class="form-control w-auto min-w-[140px]" id="filter-class">
+        <option value="">All Classes</option>
+        @for (c of classes; track c) { <option [value]="c">{{ c }}</option> }
+      </select>
+      <!-- Status Filter -->
+      <select [(ngModel)]="filterStatus" (ngModelChange)="applyFilters()" class="form-control w-auto min-w-[130px]" id="filter-status">
+        <option value="">All Status</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+        <option value="Graduated">Graduated</option>
+      </select>
+      <!-- Fee Filter -->
+      <select [(ngModel)]="filterFee" (ngModelChange)="applyFilters()" class="form-control w-auto min-w-[130px]" id="filter-fee">
+        <option value="">All Fees</option>
+        <option value="Paid">Paid</option>
+        <option value="Pending">Pending</option>
+        <option value="Overdue">Overdue</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+      <span class="text-sm font-semibold text-white flex items-center gap-2">
+        <i class="fa-solid fa-table-list text-brand-400 text-sm"></i>
+        All Students
+        <span class="bg-brand-500/15 text-brand-400 border border-brand-500/25 text-xs font-semibold px-2.5 py-0.5 rounded-full">{{ filteredStudents.length }}</span>
+      </span>
+    </div>
+
+    @if (isLoading) {
+      <div class="flex flex-col items-center justify-center py-16">
+        <div class="w-10 h-10 border-4 border-dark-600 border-t-brand-500 rounded-full animate-spin mb-3"></div>
+        <p class="text-slate-500 text-sm">Loading students...</p>
+      </div>
+    } @else if (filteredStudents.length === 0) {
+      <div class="flex flex-col items-center justify-center py-16 text-center">
+        <div class="w-20 h-20 rounded-full bg-dark-600 border border-white/[0.06] flex items-center justify-center text-4xl text-slate-600 mb-4">
+          <i class="fa-solid fa-user-slash"></i>
+        </div>
+        <h3 class="font-heading font-semibold text-slate-300 text-lg mb-1">{{ search ? 'No results found' : 'No students enrolled' }}</h3>
+        <p class="text-slate-500 text-sm">{{ search ? 'Try adjusting your filters.' : 'Click "Enroll Student" to get started.' }}</p>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr>
+              <th class="table-th">#</th>
+              <th class="table-th">Student</th>
+              <th class="table-th">Age</th>
+              <th class="table-th">Class</th>
+              <th class="table-th">Status</th>
+              <th class="table-th">Fee</th>
+              <th class="table-th">Phone</th>
+              <th class="table-th">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of filteredStudents; track s._id; let i = $index) {
+              <tr class="table-row">
+                <td class="table-td text-slate-500 text-xs">{{ i + 1 }}</td>
+                <td class="table-td">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                         [style.background]="getAvatarColor(s.name)">{{ getInitials(s.name) }}</div>
+                    <div>
+                      <div class="text-sm font-semibold text-slate-100">{{ s.name }}</div>
+                      <div class="text-xs text-slate-500">{{ s.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="table-td">
+                  <span class="badge bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">{{ s.age }} yrs</span>
+                </td>
+                <td class="table-td">
+                  <span class="badge bg-brand-500/10 text-brand-400 border border-brand-500/20">{{ s.studentClass }}</span>
+                </td>
+                <td class="table-td">
+                  <span class="badge" [class]="s.status === 'Active' ? 'badge-active' : s.status === 'Graduated' ? 'badge-graduated' : 'badge-inactive'">
+                    {{ s.status || 'Active' }}
+                  </span>
+                </td>
+                <td class="table-td">
+                  <span class="badge" [class]="s.feeStatus === 'Paid' ? 'badge-paid' : s.feeStatus === 'Overdue' ? 'badge-overdue' : 'badge-pending'">
+                    {{ s.feeStatus || 'Pending' }}
+                  </span>
+                </td>
+                <td class="table-td text-slate-400 font-mono text-xs">{{ s.phone }}</td>
+                <td class="table-td">
+                  <div class="flex items-center gap-2">
+                    <a [routerLink]="['/students', s._id]"
+                       class="btn btn-sm btn-icon bg-slate-500/10 border border-slate-500/20 text-slate-400 hover:text-white hover:bg-slate-500/20"
+                       title="View details">
+                      <i class="fa-solid fa-eye text-xs"></i>
+                    </a>
+                    <a [routerLink]="['/students', s._id, 'edit']"
+                       class="btn btn-sm btn-icon bg-brand-500/10 border border-brand-500/20 text-brand-400 hover:bg-brand-500/25"
+                       title="Edit student">
+                      <i class="fa-solid fa-pen-to-square text-xs"></i>
+                    </a>
+                    <button (click)="confirmDelete(s)"
+                            class="btn btn-sm btn-icon bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20"
+                            [id]="'delete-' + s._id" title="Delete student">
+                      <i class="fa-solid fa-trash text-xs"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Delete Confirm Dialog -->
+@if (showConfirm) {
+  <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+    <div class="card max-w-sm w-full p-8 text-center border-red-500/20 shadow-2xl animate-slide-up">
+      <div class="w-16 h-16 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center text-3xl text-red-400 mx-auto mb-5">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h3 class="font-heading text-xl font-bold text-white mb-2">Delete Student?</h3>
+      <p class="text-slate-400 text-sm mb-6 leading-relaxed">
+        Are you sure you want to remove <strong class="text-slate-200">{{ studentToDelete?.name }}</strong>?
+        This action cannot be undone.
+      </p>
+      <div class="flex gap-3 justify-center">
+        <button (click)="cancelDelete()" id="cancel-delete" class="btn btn-ghost">Cancel</button>
+        <button (click)="proceedDelete()" id="confirm-delete" class="btn btn-danger">
+          <i class="fa-solid fa-trash"></i> Yes, Delete
+        </button>
+      </div>
+    </div>
+  </div>
+}

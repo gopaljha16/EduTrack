@@ -1,0 +1,374 @@
+<div class="edu-wrapper">
+
+  <!-- ===== NAVBAR ===== -->
+  <nav class="navbar">
+    <a class="navbar-brand">
+      <div class="brand-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+      <div>
+        <span class="brand-text">EduTrack</span>
+        <span class="brand-sub">Student Management</span>
+      </div>
+    </a>
+    <div class="navbar-meta">
+      <div class="nav-chip">
+        <i class="fa-solid fa-circle"></i>
+        Live
+      </div>
+      <div class="nav-chip">
+        <i class="fa-regular fa-clock" style="color:var(--text-muted)"></i>
+        v2.0
+      </div>
+    </div>
+  </nav>
+
+  <!-- ===== MAIN ===== -->
+  <main class="main-content">
+
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-title">
+        <h1>Student <span>Records</span></h1>
+        <p>Manage and track all enrolled student information</p>
+      </div>
+      <button class="btn btn-primary" id="add-student-btn" (click)="openAddModal()">
+        <i class="fa-solid fa-plus"></i> Add Student
+      </button>
+    </div>
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+      <div class="stat-card purple">
+        <div class="stat-icon"><i class="fa-solid fa-users"></i></div>
+        <div class="stat-info">
+          <div class="stat-value">{{ totalStudents }}</div>
+          <div class="stat-label">Total Students</div>
+        </div>
+      </div>
+      <div class="stat-card cyan">
+        <div class="stat-icon"><i class="fa-solid fa-person-chalkboard"></i></div>
+        <div class="stat-info">
+          <div class="stat-value">{{ totalClasses }}</div>
+          <div class="stat-label">Classes</div>
+        </div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon"><i class="fa-solid fa-chart-simple"></i></div>
+        <div class="stat-info">
+          <div class="stat-value">{{ avgAge }}</div>
+          <div class="stat-label">Avg. Age</div>
+        </div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-icon"><i class="fa-solid fa-filter"></i></div>
+        <div class="stat-info">
+          <div class="stat-value">{{ filteredStudents.length }}</div>
+          <div class="stat-label">Showing</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="toolbar">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input
+          id="search-input"
+          type="text"
+          placeholder="Search by name, email, class or phone..."
+          (input)="onSearch($event)"
+        />
+      </div>
+      <select id="filter-class" class="filter-select" (change)="onFilterChange($event)">
+        <option value="">All Classes</option>
+        @for (cls of uniqueClasses; track cls) {
+          <option [value]="cls">{{ cls }}</option>
+        }
+      </select>
+    </div>
+
+    <!-- Student Table -->
+    <div class="table-container">
+      <div class="table-header-bar">
+        <span class="table-title">
+          <i class="fa-solid fa-table-list"></i>
+          All Students
+          <span class="count-badge">{{ filteredStudents.length }}</span>
+        </span>
+        @if (searchQuery || filterClass) {
+          <span style="font-size:12px;color:var(--text-muted);">
+            <i class="fa-solid fa-circle-info"></i>
+            Filtered results
+          </span>
+        }
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Student</th>
+            <th>Age</th>
+            <th>Email</th>
+            <th>Class</th>
+            <th>Address</th>
+            <th>Phone</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @if (isLoading) {
+            <tr class="loading-row">
+              <td colspan="8">
+                <div class="spinner"></div>
+                <div class="loading-text">Fetching students...</div>
+              </td>
+            </tr>
+          } @else if (filteredStudents.length === 0) {
+            <tr>
+              <td colspan="8">
+                <div class="empty-state">
+                  <div class="empty-icon"><i class="fa-solid fa-user-slash"></i></div>
+                  <h3>{{ searchQuery ? 'No results found' : 'No students enrolled' }}</h3>
+                  <p>{{ searchQuery ? 'Try adjusting your search or filter.' : 'Click "Add Student" to get started.' }}</p>
+                </div>
+              </td>
+            </tr>
+          } @else {
+            @for (student of filteredStudents; track student._id; let i = $index) {
+              <tr>
+                <td style="color:var(--text-muted);font-size:13px;">{{ i + 1 }}</td>
+                <td>
+                  <div class="student-cell">
+                    <div class="student-avatar" [style.background]="getAvatarColor(student.name)">
+                      {{ getInitials(student.name) }}
+                    </div>
+                    <span class="student-name-text">{{ student.name }}</span>
+                  </div>
+                </td>
+                <td><span class="age-badge">{{ student.age }} yrs</span></td>
+                <td><span class="email-text">{{ student.email }}</span></td>
+                <td><span class="class-badge">{{ student.studentClass }}</span></td>
+                <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ student.address }}</td>
+                <td><span class="phone-text">{{ student.phone }}</span></td>
+                <td>
+                  <div class="actions-cell">
+                    <button
+                      class="btn btn-sm btn-icon btn-edit"
+                      id="edit-btn-{{ student._id }}"
+                      title="Edit student"
+                      (click)="openEditModal(student)"
+                    >
+                      <i class="fa-solid fa-pen-to-square"></i>
+                    </button>
+                    <button
+                      class="btn btn-sm btn-icon btn-del"
+                      id="delete-btn-{{ student._id }}"
+                      title="Delete student"
+                      (click)="confirmDelete(student)"
+                    >
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+  </main>
+</div>
+
+<!-- ===== ADD / EDIT MODAL ===== -->
+@if (showModal) {
+  <div class="modal-overlay" id="student-modal" (click)="$event.target === $event.currentTarget && closeModal()">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-header-left">
+          <div class="modal-icon">
+            <i class="fa-solid {{ selectStudent ? 'fa-pen-to-square' : 'fa-user-plus' }}"></i>
+          </div>
+          <div>
+            <div class="modal-title">{{ selectStudent ? 'Edit Student' : 'Enroll New Student' }}</div>
+            <div class="modal-sub">{{ selectStudent ? 'Update the student record below' : 'Fill in all details to enroll a student' }}</div>
+          </div>
+        </div>
+        <button class="modal-close" id="close-modal-btn" (click)="closeModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form [formGroup]="studentForm" (ngSubmit)="onSubmit()">
+          <div class="form-grid">
+
+            <!-- Section: Personal -->
+            <div class="form-section-title">Personal Details</div>
+
+            <div class="form-group">
+              <label class="form-label" for="modal-name">
+                <i class="fa-solid fa-user"></i> Full Name
+              </label>
+              <input
+                id="modal-name"
+                type="text"
+                class="form-control"
+                [class.is-invalid]="studentForm.get('name')?.invalid && studentForm.get('name')?.touched"
+                formControlName="name"
+                placeholder="e.g. Rahul Sharma"
+              />
+              @if (studentForm.get('name')?.invalid && studentForm.get('name')?.touched) {
+                <span class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> Name is required (min 2 chars).</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modal-age">
+                <i class="fa-solid fa-cake-candles"></i> Age
+              </label>
+              <input
+                id="modal-age"
+                type="number"
+                class="form-control"
+                [class.is-invalid]="studentForm.get('age')?.invalid && studentForm.get('age')?.touched"
+                formControlName="age"
+                placeholder="e.g. 18"
+              />
+              @if (studentForm.get('age')?.invalid && studentForm.get('age')?.touched) {
+                <span class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> Valid age (1–100) is required.</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modal-email">
+                <i class="fa-solid fa-envelope"></i> Email Address
+              </label>
+              <input
+                id="modal-email"
+                type="email"
+                class="form-control"
+                [class.is-invalid]="studentForm.get('email')?.invalid && studentForm.get('email')?.touched"
+                formControlName="email"
+                placeholder="e.g. rahul@school.com"
+              />
+              @if (studentForm.get('email')?.invalid && studentForm.get('email')?.touched) {
+                <span class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> A valid email is required.</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modal-phone">
+                <i class="fa-solid fa-phone"></i> Phone Number
+              </label>
+              <input
+                id="modal-phone"
+                type="tel"
+                class="form-control"
+                [class.is-invalid]="studentForm.get('phone')?.invalid && studentForm.get('phone')?.touched"
+                formControlName="phone"
+                placeholder="10-digit number"
+              />
+              @if (studentForm.get('phone')?.invalid && studentForm.get('phone')?.touched) {
+                <span class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> 10-digit phone is required.</span>
+              }
+            </div>
+
+            <!-- Section: Academic -->
+            <div class="form-section-title">Academic & Location</div>
+
+            <div class="form-group">
+              <label class="form-label" for="modal-class">
+                <i class="fa-solid fa-chalkboard"></i> Class / Grade
+              </label>
+              <input
+                id="modal-class"
+                type="text"
+                class="form-control"
+                [class.is-invalid]="studentForm.get('studentClass')?.invalid && studentForm.get('studentClass')?.touched"
+                formControlName="studentClass"
+                placeholder="e.g. 10th, BSc Year 2"
+              />
+              @if (studentForm.get('studentClass')?.invalid && studentForm.get('studentClass')?.touched) {
+                <span class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> Class is required.</span>
+              }
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="modal-address">
+                <i class="fa-solid fa-location-dot"></i> Address
+              </label>
+              <input
+                id="modal-address"
+                type="text"
+                class="form-control"
+                [class.is-invalid]="studentForm.get('address')?.invalid && studentForm.get('address')?.touched"
+                formControlName="address"
+                placeholder="e.g. 12 MG Road, Mumbai"
+              />
+              @if (studentForm.get('address')?.invalid && studentForm.get('address')?.touched) {
+                <span class="error-msg"><i class="fa-solid fa-circle-exclamation"></i> Address is required.</span>
+              }
+            </div>
+
+          </div>
+
+          <div class="modal-footer" style="padding: 20px 0 0;">
+            <button type="button" class="btn btn-ghost" id="cancel-form-btn" (click)="closeModal()">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" id="submit-form-btn">
+              <i class="fa-solid fa-{{ selectStudent ? 'floppy-disk' : 'user-plus' }}"></i>
+              {{ selectStudent ? 'Save Changes' : 'Enroll Student' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== DELETE CONFIRM DIALOG ===== -->
+@if (showConfirm) {
+  <div class="modal-overlay" id="confirm-dialog">
+    <div class="confirm-box">
+      <div class="confirm-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+      <div class="confirm-title">Delete Student?</div>
+      <div class="confirm-msg">
+        Are you sure you want to remove <strong style="color:var(--text-primary)">{{ studentToDelete?.name }}</strong>?
+        <br>This action cannot be undone.
+      </div>
+      <div class="confirm-actions">
+        <button class="btn btn-ghost" id="cancel-delete-btn" (click)="cancelDelete()">Cancel</button>
+        <button class="btn btn-danger" id="confirm-delete-btn" (click)="proceedDelete()">
+          <i class="fa-solid fa-trash"></i> Yes, Delete
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- ===== TOAST CONTAINER ===== -->
+<div class="toast-container">
+  @for (toast of toasts; track toast.id) {
+    <div class="toast {{ toast.type }}" [class.hide]="toast.hide">
+      <div class="toast-icon">
+        <i class="fa-solid fa-{{
+          toast.type === 'success' ? 'circle-check' :
+          toast.type === 'error'   ? 'circle-xmark' :
+          'circle-info'
+        }}"></i>
+      </div>
+      <div class="toast-body">
+        <div class="toast-title">{{ toast.title }}</div>
+        <div class="toast-msg">{{ toast.message }}</div>
+      </div>
+      <button
+        style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;padding:4px;"
+        (click)="dismissToast(toast.id)"
+      >
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+  }
+</div>

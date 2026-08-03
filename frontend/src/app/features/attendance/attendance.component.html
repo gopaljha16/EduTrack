@@ -1,0 +1,138 @@
+<div class="p-8">
+  <!-- Page Header -->
+  <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+    <div>
+      <h1 class="font-heading text-3xl font-bold text-white">Daily Attendance</h1>
+      <p class="text-slate-400 text-sm mt-1">Record and manage daily attendance sheets</p>
+    </div>
+  </div>
+
+  <!-- Filters / Toolbar -->
+  <div class="card p-5 mb-6">
+    <div class="flex flex-wrap items-end gap-4">
+      <div class="form-group min-w-[180px]">
+        <label class="form-label mb-2"><i class="fa-solid fa-chalkboard"></i> Class</label>
+        <select [(ngModel)]="selectedClass" (change)="loadAttendance()" class="form-control" id="attendance-class">
+          @for (c of classes; track c) {
+            <option [value]="c">{{ c }}</option>
+          }
+          @empty {
+            <option value="">No Classes Found</option>
+          }
+        </select>
+      </div>
+
+      <div class="form-group min-w-[180px]">
+        <label class="form-label mb-2"><i class="fa-solid fa-calendar"></i> Date</label>
+        <input type="date" [(ngModel)]="selectedDate" (change)="loadAttendance()" class="form-control" id="attendance-date" />
+      </div>
+
+      <div class="flex items-center gap-2 ml-auto">
+        <button (click)="setStatusAll('Present')" class="btn btn-ghost btn-sm border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/10">
+          <i class="fa-solid fa-check"></i> Mark All Present
+        </button>
+        <button (click)="setStatusAll('Absent')" class="btn btn-ghost btn-sm border-red-500/20 text-red-400 hover:bg-red-500/10">
+          <i class="fa-solid fa-xmark"></i> Mark All Absent
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sheet Table -->
+  <div class="table-container">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+      <span class="text-sm font-semibold text-white flex items-center gap-2">
+        <i class="fa-solid fa-file-signature text-brand-400 text-sm"></i>
+        Attendance Register — {{ selectedClass }}
+      </span>
+      <span class="text-xs text-slate-500 font-mono">{{ selectedDate | date:'fullDate' }}</span>
+    </div>
+
+    @if (isLoading) {
+      <div class="flex flex-col items-center justify-center py-16">
+        <div class="w-10 h-10 border-4 border-dark-600 border-t-brand-500 rounded-full animate-spin mb-3"></div>
+        <p class="text-slate-500 text-sm">Fetching student sheet...</p>
+      </div>
+    } @else if (records.length === 0) {
+      <div class="flex flex-col items-center justify-center py-16 text-center">
+        <div class="w-16 h-16 rounded-full bg-dark-600 flex items-center justify-center text-3xl text-slate-600 mb-4">
+          <i class="fa-solid fa-users-slash"></i>
+        </div>
+        <h3 class="font-heading font-semibold text-slate-300 text-lg mb-1">No active students</h3>
+        <p class="text-slate-500 text-sm">Add students to Class "{{ selectedClass }}" to mark attendance.</p>
+      </div>
+    } @else {
+      <table class="w-full">
+        <thead>
+          <tr>
+            <th class="table-th w-16">#</th>
+            <th class="table-th">Student</th>
+            <th class="table-th w-80">Status</th>
+            <th class="table-th">Remarks</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (r of records; track r.student._id; let i = $index) {
+            <tr class="table-row">
+              <td class="table-td text-slate-500 text-xs">{{ i + 1 }}</td>
+              <td class="table-td">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                       [style.background]="getAvatarColor(r.student.name)">{{ getInitials(r.student.name) }}</div>
+                  <div>
+                    <div class="text-sm font-semibold text-slate-200">{{ r.student.name }}</div>
+                    <div class="text-xs text-slate-500">Roll No: {{ r.student.rollNumber || '—' }}</div>
+                  </div>
+                </div>
+              </td>
+              <td class="table-td">
+                <div class="inline-flex rounded-xl bg-dark-900 p-1 border border-white/[0.06]">
+                  <button type="button" (click)="r.status = 'Present'"
+                          class="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200"
+                          [class.bg-emerald-500]="r.status === 'Present'"
+                          [class.text-white]="r.status === 'Present'"
+                          [class.text-slate-400]="r.status !== 'Present'"
+                          [class.hover:text-slate-200]="r.status !== 'Present'">
+                    Present
+                  </button>
+                  <button type="button" (click)="r.status = 'Late'"
+                          class="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200"
+                          [class.bg-amber-500]="r.status === 'Late'"
+                          [class.text-white]="r.status === 'Late'"
+                          [class.text-slate-400]="r.status !== 'Late'"
+                          [class.hover:text-slate-200]="r.status !== 'Late'">
+                    Late
+                  </button>
+                  <button type="button" (click)="r.status = 'Absent'"
+                          class="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200"
+                          [class.bg-red-500]="r.status === 'Absent'"
+                          [class.text-white]="r.status === 'Absent'"
+                          [class.text-slate-400]="r.status !== 'Absent'"
+                          [class.hover:text-slate-200]="r.status !== 'Absent'">
+                    Absent
+                  </button>
+                </div>
+              </td>
+              <td class="table-td">
+                <input type="text" [(ngModel)]="r.remarks"
+                       class="form-control py-2 px-3 text-xs w-full max-w-xs"
+                       placeholder="Add note..." />
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+
+      <!-- Bottom save actions -->
+      <div class="p-6 border-t border-white/[0.06] flex items-center justify-end">
+        <button (click)="save()" class="btn btn-primary px-8" [disabled]="isSaving">
+          @if (isSaving) {
+            <i class="fa-solid fa-spinner fa-spin"></i> Saving...
+          } @else {
+            <i class="fa-solid fa-floppy-disk"></i> Save Attendance Sheet
+          }
+        </button>
+      </div>
+    }
+  </div>
+</div>

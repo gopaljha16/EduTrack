@@ -1,0 +1,90 @@
+<div class="min-h-screen bg-dark-900 flex items-center justify-center p-4"
+     style="background-image: radial-gradient(ellipse at 30% 20%, rgba(124,108,248,0.1) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(34,211,238,0.07) 0%, transparent 50%);">
+
+  <div class="w-full max-w-md animate-slide-up">
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-brand shadow-glow-purple mb-4">
+        <i class="fa-solid fa-graduation-cap text-white text-2xl"></i>
+      </div>
+      <h1 class="font-heading text-3xl font-bold text-white">Create Account</h1>
+      <p class="text-slate-400 text-sm mt-1">Set up your EduTrack admin account</p>
+    </div>
+
+    <div class="card p-8">
+      @if (errorMsg) {
+        <div class="mb-5 flex items-center gap-3 bg-red-500/10 border border-red-500/25 text-red-400 rounded-xl px-4 py-3 text-sm animate-fade-in">
+          <i class="fa-solid fa-circle-exclamation flex-shrink-0"></i>
+          {{ errorMsg }}
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <!-- Name -->
+        <div class="mb-4">
+          <label class="form-label mb-2" for="reg-name">
+            <i class="fa-solid fa-user"></i> Full Name
+          </label>
+          <div class="input-wrapper">
+            <i class="input-icon fa-solid fa-user"></i>
+            <input id="reg-name" type="text" formControlName="name" class="form-control input-with-icon"
+                   [class.border-red-500/50]="f('name')?.invalid && f('name')?.touched"
+                   placeholder="Your full name" />
+          </div>
+          @if (f('name')?.invalid && f('name')?.touched) {
+            <p class="form-error"><i class="fa-solid fa-circle-exclamation"></i> Name is required (min 2 chars).</p>
+          }
+        </div>
+
+        <!-- Email -->
+        <div class="mb-4">
+          <label class="form-label mb-2" for="reg-email">
+            <i class="fa-solid fa-envelope"></i> Email Address
+          </label>
+          <div class="input-wrapper">
+            <i class="input-icon fa-solid fa-envelope"></i>
+            <input id="reg-email" type="email" formControlName="email" class="form-control input-with-icon"
+                   [class.border-red-500/50]="f('email')?.invalid && f('email')?.touched"
+                   placeholder="admin@school.com" />
+          </div>
+          @if (f('email')?.invalid && f('email')?.touched) {
+            <p class="form-error"><i class="fa-solid fa-circle-exclamation"></i> Valid email is required.</p>
+          }
+        </div>
+
+        <!-- Password -->
+        <div class="mb-6">
+          <label class="form-label mb-2" for="reg-password">
+            <i class="fa-solid fa-lock"></i> Password
+          </label>
+          <div class="input-wrapper">
+            <i class="input-icon fa-solid fa-lock"></i>
+            <input id="reg-password" [type]="showPassword ? 'text' : 'password'" formControlName="password"
+                   class="form-control input-with-icon pr-12"
+                   [class.border-red-500/50]="f('password')?.invalid && f('password')?.touched"
+                   placeholder="Min. 6 characters" />
+            <button type="button" (click)="showPassword = !showPassword"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
+              <i class="fa-solid" [class]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+            </button>
+          </div>
+          @if (f('password')?.invalid && f('password')?.touched) {
+            <p class="form-error"><i class="fa-solid fa-circle-exclamation"></i> Password must be at least 6 characters.</p>
+          }
+        </div>
+
+        <button id="register-btn" type="submit" class="btn btn-primary w-full justify-center py-3 text-base" [disabled]="isLoading">
+          @if (isLoading) {
+            <i class="fa-solid fa-spinner fa-spin"></i> Creating account...
+          } @else {
+            <i class="fa-solid fa-user-plus"></i> Create Account
+          }
+        </button>
+      </form>
+
+      <p class="text-center text-sm text-slate-500 mt-5">
+        Already have an account?
+        <a routerLink="/auth/login" class="text-brand-400 hover:text-brand-300 font-medium transition-colors">Sign in</a>
+      </p>
+    </div>
+  </div>
+</div>

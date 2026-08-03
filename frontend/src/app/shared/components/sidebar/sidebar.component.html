@@ -1,0 +1,47 @@
+<aside class="fixed inset-y-0 left-0 w-64 bg-dark-800 border-r border-white/[0.08] flex flex-col z-50">
+  <!-- Logo -->
+  <div class="flex items-center gap-3 px-6 py-5 border-b border-white/[0.08]">
+    <div class="w-10 h-10 rounded-xl bg-gradient-brand flex items-center justify-center text-white text-lg shadow-glow-sm">
+      <i class="fa-solid fa-graduation-cap"></i>
+    </div>
+    <div>
+      <div class="font-heading font-bold text-lg bg-gradient-to-r from-brand-400 to-cyan-400 bg-clip-text text-transparent">EduTrack</div>
+      <div class="text-[10px] text-slate-500 uppercase tracking-widest">Management</div>
+    </div>
+  </div>
+
+  <!-- Nav Links -->
+  <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+    <p class="text-[10px] font-bold text-slate-600 uppercase tracking-widest px-3 mb-3">Main Menu</p>
+    @for (link of navLinks; track link.route) {
+      <a
+        [routerLink]="link.route"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: link.route === '/students' || link.route === '/dashboard' }"
+        class="sidebar-link"
+      >
+        <i class="fa-solid {{ link.icon }} w-4 text-center"></i>
+        {{ link.label }}
+      </a>
+    }
+  </nav>
+
+  <!-- User Info + Logout -->
+  <div class="border-t border-white/[0.08] p-4">
+    @if (auth.currentUser) {
+      <div class="flex items-center gap-3 mb-3 px-2">
+        <div class="w-9 h-9 rounded-full bg-gradient-brand flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+          {{ auth.currentUser.name.slice(0, 2).toUpperCase() }}
+        </div>
+        <div class="min-w-0">
+          <div class="text-sm font-semibold text-slate-200 truncate">{{ auth.currentUser.name }}</div>
+          <div class="text-xs text-slate-500 truncate">{{ auth.currentUser.role | titlecase }}</div>
+        </div>
+      </div>
+    }
+    <button (click)="logout()" class="btn btn-ghost w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/10">
+      <i class="fa-solid fa-right-from-bracket"></i>
+      Logout
+    </button>
+  </div>
+</aside>

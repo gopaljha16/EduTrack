@@ -1,0 +1,77 @@
+<div class="min-h-screen bg-dark-900 flex items-center justify-center p-4"
+     style="background-image: radial-gradient(ellipse at 30% 20%, rgba(124,108,248,0.1) 0%, transparent 50%), radial-gradient(ellipse at 70% 80%, rgba(34,211,238,0.07) 0%, transparent 50%);">
+
+  <div class="w-full max-w-md animate-slide-up">
+    <!-- Logo -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-brand shadow-glow-purple mb-4">
+        <i class="fa-solid fa-graduation-cap text-white text-2xl"></i>
+      </div>
+      <h1 class="font-heading text-3xl font-bold text-white">EduTrack</h1>
+      <p class="text-slate-400 text-sm mt-1">Sign in to your admin account</p>
+    </div>
+
+    <!-- Card -->
+    <div class="card p-8">
+      <!-- Error Alert -->
+      @if (errorMsg) {
+        <div class="mb-5 flex items-center gap-3 bg-red-500/10 border border-red-500/25 text-red-400 rounded-xl px-4 py-3 text-sm animate-fade-in">
+          <i class="fa-solid fa-circle-exclamation flex-shrink-0"></i>
+          {{ errorMsg }}
+        </div>
+      }
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <!-- Email -->
+        <div class="mb-5">
+          <label class="form-label mb-2" for="login-email">
+            <i class="fa-solid fa-envelope"></i> Email Address
+          </label>
+          <div class="input-wrapper">
+            <i class="input-icon fa-solid fa-envelope"></i>
+            <input id="login-email" type="email" formControlName="email" class="form-control input-with-icon"
+                   [class.border-red-500/50]="f('email')?.invalid && f('email')?.touched"
+                   placeholder="admin@school.com" />
+          </div>
+          @if (f('email')?.invalid && f('email')?.touched) {
+            <p class="form-error"><i class="fa-solid fa-circle-exclamation"></i> Valid email is required.</p>
+          }
+        </div>
+
+        <!-- Password -->
+        <div class="mb-6">
+          <label class="form-label mb-2" for="login-password">
+            <i class="fa-solid fa-lock"></i> Password
+          </label>
+          <div class="input-wrapper">
+            <i class="input-icon fa-solid fa-lock"></i>
+            <input id="login-password" [type]="showPassword ? 'text' : 'password'" formControlName="password"
+                   class="form-control input-with-icon pr-12"
+                   [class.border-red-500/50]="f('password')?.invalid && f('password')?.touched"
+                   placeholder="••••••••" />
+            <button type="button" (click)="showPassword = !showPassword"
+                    class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 transition-colors">
+              <i class="fa-solid" [class]="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+            </button>
+          </div>
+          @if (f('password')?.invalid && f('password')?.touched) {
+            <p class="form-error"><i class="fa-solid fa-circle-exclamation"></i> Password must be at least 6 characters.</p>
+          }
+        </div>
+
+        <!-- Submit -->
+        <button id="login-btn" type="submit" class="btn btn-primary w-full justify-center py-3 text-base" [disabled]="isLoading">
+          @if (isLoading) {
+            <i class="fa-solid fa-spinner fa-spin"></i> Signing in...
+          } @else {
+            <i class="fa-solid fa-right-to-bracket"></i> Sign In
+          }
+        </button>
+      </form>
+
+      <p class="text-center text-xs text-slate-600 mt-5">
+        Contact your system administrator to get access.
+      </p>
+    </div>
+  </div>
+</div>
