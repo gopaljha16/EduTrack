@@ -33,6 +33,10 @@ export class AuthService {
     );
   }
 
+  updatePassword(data: any): Observable<any> {
+    return this.http.put(`${this.apiUrl}/update-password`, data);
+  }
+
   logout(): void {
     localStorage.removeItem('edutrack_token');
     localStorage.removeItem('edutrack_user');

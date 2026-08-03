@@ -1,0 +1,172 @@
+<div class="p-8">
+  <!-- Page Header -->
+  <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+    <div>
+      <h1 class="font-heading text-3xl font-bold text-white">Exams</h1>
+      <p class="text-slate-400 text-sm mt-1">Manage exam date sheets, timings, and classroom allocations</p>
+    </div>
+    <button (click)="showAddModal = true" class="btn btn-primary" id="add-exam-btn">
+      <i class="fa-solid fa-plus"></i> Schedule Exam
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="card p-4 mb-6">
+    <div class="flex flex-wrap gap-3">
+      <div class="input-wrapper flex-1 min-w-[250px]">
+        <i class="input-icon fa-solid fa-magnifying-glass"></i>
+        <input type="text" [(ngModel)]="searchClass" (ngModelChange)="applyFilter()"
+               class="form-control input-with-icon" placeholder="Search by class or subject..." id="exam-search"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table list -->
+  <div class="table-container animate-fade-in">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+      <span class="text-sm font-semibold text-white flex items-center gap-2">
+        <i class="fa-solid fa-file-signature text-brand-400 text-sm"></i>
+        Active Exam Schedules
+        <span class="bg-brand-500/15 text-brand-400 border border-brand-500/25 text-xs font-semibold px-2.5 py-0.5 rounded-full">{{ filteredExams.length }}</span>
+      </span>
+    </div>
+
+    @if (isLoading) {
+      <div class="flex flex-col items-center justify-center py-20">
+        <div class="w-10 h-10 border-4 border-dark-600 border-t-brand-500 rounded-full animate-spin mb-3"></div>
+        <p class="text-slate-500 text-sm">Loading exam scheduler...</p>
+      </div>
+    } @else if (filteredExams.length === 0) {
+      <div class="flex flex-col items-center justify-center py-16 text-center">
+        <div class="w-16 h-16 rounded-full bg-dark-600 flex items-center justify-center text-3xl text-slate-600 mb-4">
+          <i class="fa-solid fa-calendar-minus"></i>
+        </div>
+        <h3 class="font-heading font-semibold text-slate-300 text-lg mb-1">No exams scheduled</h3>
+        <p class="text-slate-500 text-sm">Schedule upcoming midterm, finals or class test schedules.</p>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr>
+              <th class="table-th">#</th>
+              <th class="table-th">Subject</th>
+              <th class="table-th">Class</th>
+              <th class="table-th">Exam Type</th>
+              <th class="table-th">Date</th>
+              <th class="table-th">Time Slot</th>
+              <th class="table-th">Room Allocation</th>
+              <th class="table-th">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (e of filteredExams; track e._id; let i = $index) {
+              <tr class="table-row">
+                <td class="table-td text-slate-500 text-xs">{{ i + 1 }}</td>
+                <td class="table-td font-semibold text-slate-100">{{ e.subject }}</td>
+                <td class="table-td">
+                  <span class="badge bg-brand-500/10 text-brand-400 border border-brand-500/20">{{ e.studentClass }}</span>
+                </td>
+                <td class="table-td">
+                  <span class="badge"
+                        [class.badge-active]="e.examType === 'Final'"
+                        [class.badge-pending]="e.examType === 'Midterm'"
+                        [class.badge-overdue]="e.examType === 'Class Test'"
+                        [class.badge-inactive]="e.examType === 'Practical'">
+                    {{ e.examType }}
+                  </span>
+                </td>
+                <td class="table-td font-mono text-xs text-slate-300">{{ e.date | date:'longDate' }}</td>
+                <td class="table-td font-mono text-xs text-slate-400">
+                  <i class="fa-regular fa-clock text-brand-400 mr-1 text-[10px]"></i> {{ e.startTime }} - {{ e.endTime }}
+                </td>
+                <td class="table-td font-semibold text-slate-300">
+                  <i class="fa-solid fa-door-open text-cyan-400 mr-1 text-[10px]"></i> Room {{ e.room }}
+                </td>
+                <td class="table-td">
+                  <div class="flex items-center gap-2">
+                    <button (click)="openEdit(e)" class="btn btn-sm btn-icon bg-brand-500/10 border border-brand-500/20 text-brand-400 hover:bg-brand-500/20" title="Edit schedule">
+                      <i class="fa-solid fa-pen-to-square text-xs"></i>
+                    </button>
+                    <button (click)="deleteExam(e._id!, e.subject, e.studentClass)" class="btn btn-sm btn-icon bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20" title="Cancel exam">
+                      <i class="fa-solid fa-trash text-xs"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Add/Edit Exam Modal -->
+@if (showAddModal) {
+  <div class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in" id="add-exam-modal">
+    <div class="card max-w-md w-full p-6 shadow-2xl animate-slide-up">
+      <div class="flex items-center justify-between mb-5 border-b border-white/[0.06] pb-3">
+        <h3 class="font-heading text-lg font-bold text-white">
+          <i class="fa-solid fa-plus text-brand-400"></i> {{ isEditMode ? 'Edit Exam Slot' : 'Schedule Exam Session' }}
+        </h3>
+        <button (click)="closeModal()" class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-4">
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="form-label mb-1.5">Subject</label>
+            <input type="text" [(ngModel)]="newExam.subject" class="form-control py-2.5" placeholder="e.g. Mathematics" id="exam-subject"/>
+          </div>
+          <div>
+            <label class="form-label mb-1.5">Class / Grade</label>
+            <input type="text" [(ngModel)]="newExam.studentClass" class="form-control py-2.5" placeholder="e.g. 10th Class" id="exam-class"/>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="form-label mb-1.5">Exam Category</label>
+            <select [(ngModel)]="newExam.examType" class="form-control py-2.5" id="exam-type">
+              <option value="Midterm">Midterm</option>
+              <option value="Final">Final Theory</option>
+              <option value="Class Test">Class Test</option>
+              <option value="Practical">Practical / Lab</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label mb-1.5">Exam Date</label>
+            <input type="date" [(ngModel)]="newExam.date" class="form-control py-2.5" id="exam-date"/>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="form-label mb-1.5">Start Time</label>
+            <input type="text" [(ngModel)]="newExam.startTime" class="form-control py-2.5" placeholder="e.g. 09:00 AM" id="exam-start"/>
+          </div>
+          <div>
+            <label class="form-label mb-1.5">End Time</label>
+            <input type="text" [(ngModel)]="newExam.endTime" class="form-control py-2.5" placeholder="e.g. 12:00 PM" id="exam-end"/>
+          </div>
+          <div>
+            <label class="form-label mb-1.5">Room / Hall</label>
+            <input type="text" [(ngModel)]="newExam.room" class="form-control py-2.5" placeholder="e.g. 101, Gym" id="exam-room"/>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex gap-3 justify-end mt-6">
+        <button (click)="closeModal()" class="btn btn-ghost">Cancel</button>
+        <button (click)="save()" class="btn btn-primary" [disabled]="isSaving" id="save-exam-btn">
+          @if (isSaving) {
+            <i class="fa-solid fa-spinner fa-spin"></i> Saving...
+          } @else {
+            <i class="fa-solid fa-floppy-disk"></i> {{ isEditMode ? 'Update Session' : 'Schedule Exam' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

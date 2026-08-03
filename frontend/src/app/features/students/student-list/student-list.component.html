@@ -6,6 +6,36 @@
       <p class="text-slate-400 text-sm mt-1">Manage all enrolled student records</p>
     </div>
     <div class="flex items-center gap-3">
+      <!-- Hidden file input for CSV import -->
+      <input
+        type="file"
+        id="csv-file-input"
+        class="hidden"
+        accept=".csv"
+        (change)="onFileSelected($event)"
+      />
+      <!-- View Switcher -->
+      <div class="inline-flex rounded-xl bg-dark-800 p-1 border border-white/[0.08] mr-2">
+        <button (click)="viewMode = 'table'" class="w-9 h-9 flex items-center justify-center rounded-lg text-sm transition-all"
+                [class.bg-brand-500]="viewMode === 'table'" [class.text-white]="viewMode === 'table'"
+                [class.text-slate-400]="viewMode !== 'table'" [class.hover:text-slate-200]="viewMode !== 'table'"
+                title="List View" id="toggle-list">
+          <i class="fa-solid fa-list-ul"></i>
+        </button>
+        <button (click)="viewMode = 'grid'" class="w-9 h-9 flex items-center justify-center rounded-lg text-sm transition-all"
+                [class.bg-brand-500]="viewMode === 'grid'" [class.text-white]="viewMode === 'grid'"
+                [class.text-slate-400]="viewMode !== 'grid'" [class.hover:text-slate-200]="viewMode !== 'grid'"
+                title="Grid View" id="toggle-grid">
+          <i class="fa-solid fa-table-cells"></i>
+        </button>
+      </div>
+
+      <button (click)="triggerImport()" class="btn btn-ghost">
+        <i class="fa-solid fa-file-import"></i> Import CSV
+      </button>
+      <button (click)="showPromoteModal = true" class="btn btn-ghost">
+        <i class="fa-solid fa-graduation-cap"></i> Promotion Wizard
+      </button>
       <button (click)="exportCsv()" class="btn btn-ghost">
         <i class="fa-solid fa-download"></i> Export CSV
       </button>
@@ -46,101 +76,185 @@
     </div>
   </div>
 
-  <!-- Table -->
-  <div class="table-container">
-    <div class="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
-      <span class="text-sm font-semibold text-white flex items-center gap-2">
-        <i class="fa-solid fa-table-list text-brand-400 text-sm"></i>
-        All Students
-        <span class="bg-brand-500/15 text-brand-400 border border-brand-500/25 text-xs font-semibold px-2.5 py-0.5 rounded-full">{{ filteredStudents.length }}</span>
-      </span>
+  <!-- View Panels -->
+  @if (isLoading) {
+    <div class="flex flex-col items-center justify-center py-24 card">
+      <div class="w-10 h-10 border-4 border-dark-600 border-t-brand-500 rounded-full animate-spin mb-3"></div>
+      <p class="text-slate-500 text-sm">Loading student directory...</p>
     </div>
-
-    @if (isLoading) {
-      <div class="flex flex-col items-center justify-center py-16">
-        <div class="w-10 h-10 border-4 border-dark-600 border-t-brand-500 rounded-full animate-spin mb-3"></div>
-        <p class="text-slate-500 text-sm">Loading students...</p>
+  } @else if (filteredStudents.length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 text-center card">
+      <div class="w-20 h-20 rounded-full bg-dark-600 border border-white/[0.06] flex items-center justify-center text-4xl text-slate-600 mb-4">
+        <i class="fa-solid fa-user-slash"></i>
       </div>
-    } @else if (filteredStudents.length === 0) {
-      <div class="flex flex-col items-center justify-center py-16 text-center">
-        <div class="w-20 h-20 rounded-full bg-dark-600 border border-white/[0.06] flex items-center justify-center text-4xl text-slate-600 mb-4">
-          <i class="fa-solid fa-user-slash"></i>
+      <h3 class="font-heading font-semibold text-slate-300 text-lg mb-1">{{ search ? 'No results found' : 'No students enrolled' }}</h3>
+      <p class="text-slate-500 text-sm">{{ search ? 'Try adjusting your filters.' : 'Click "Enroll Student" to get started.' }}</p>
+    </div>
+  } @else {
+    <!-- PANEL A: TABLE VIEW -->
+    @if (viewMode === 'table') {
+      <div class="table-container animate-fade-in">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+          <span class="text-sm font-semibold text-white flex items-center gap-2">
+            <i class="fa-solid fa-table-list text-brand-400 text-sm"></i>
+            All Students
+            <span class="bg-brand-500/15 text-brand-400 border border-brand-500/25 text-xs font-semibold px-2.5 py-0.5 rounded-full">{{ filteredStudents.length }}</span>
+          </span>
         </div>
-        <h3 class="font-heading font-semibold text-slate-300 text-lg mb-1">{{ search ? 'No results found' : 'No students enrolled' }}</h3>
-        <p class="text-slate-500 text-sm">{{ search ? 'Try adjusting your filters.' : 'Click "Enroll Student" to get started.' }}</p>
-      </div>
-    } @else {
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead>
-            <tr>
-              <th class="table-th">#</th>
-              <th class="table-th">Student</th>
-              <th class="table-th">Age</th>
-              <th class="table-th">Class</th>
-              <th class="table-th">Status</th>
-              <th class="table-th">Fee</th>
-              <th class="table-th">Phone</th>
-              <th class="table-th">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            @for (s of filteredStudents; track s._id; let i = $index) {
-              <tr class="table-row">
-                <td class="table-td text-slate-500 text-xs">{{ i + 1 }}</td>
-                <td class="table-td">
-                  <div class="flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
-                         [style.background]="getAvatarColor(s.name)">{{ getInitials(s.name) }}</div>
-                    <div>
-                      <div class="text-sm font-semibold text-slate-100">{{ s.name }}</div>
-                      <div class="text-xs text-slate-500">{{ s.email }}</div>
+        <div class="overflow-x-auto">
+          <table class="w-full">
+            <thead>
+              <tr>
+                <th class="table-th">#</th>
+                <th class="table-th cursor-pointer hover:text-white transition-colors" (click)="setSort('name')">
+                  Student
+                  <i class="fa-solid" [class.fa-sort-up]="sortKey === 'name' && sortDirection === 'asc'" [class.fa-sort-down]="sortKey === 'name' && sortDirection === 'desc'" [class.fa-sort]="sortKey !== 'name'"></i>
+                </th>
+                <th class="table-th cursor-pointer hover:text-white transition-colors" (click)="setSort('age')">
+                  Age
+                  <i class="fa-solid" [class.fa-sort-up]="sortKey === 'age' && sortDirection === 'asc'" [class.fa-sort-down]="sortKey === 'age' && sortDirection === 'desc'" [class.fa-sort]="sortKey !== 'age'"></i>
+                </th>
+                <th class="table-th cursor-pointer hover:text-white transition-colors" (click)="setSort('studentClass')">
+                  Class
+                  <i class="fa-solid" [class.fa-sort-up]="sortKey === 'studentClass' && sortDirection === 'asc'" [class.fa-sort-down]="sortKey === 'studentClass' && sortDirection === 'desc'" [class.fa-sort]="sortKey !== 'studentClass'"></i>
+                </th>
+                <th class="table-th cursor-pointer hover:text-white transition-colors" (click)="setSort('status')">
+                  Status
+                  <i class="fa-solid" [class.fa-sort-up]="sortKey === 'status' && sortDirection === 'asc'" [class.fa-sort-down]="sortKey === 'status' && sortDirection === 'desc'" [class.fa-sort]="sortKey !== 'status'"></i>
+                </th>
+                <th class="table-th cursor-pointer hover:text-white transition-colors" (click)="setSort('feeStatus')">
+                  Fee
+                  <i class="fa-solid" [class.fa-sort-up]="sortKey === 'feeStatus' && sortDirection === 'asc'" [class.fa-sort-down]="sortKey === 'feeStatus' && sortDirection === 'desc'" [class.fa-sort]="sortKey !== 'feeStatus'"></i>
+                </th>
+                <th class="table-th cursor-pointer hover:text-white transition-colors" (click)="setSort('phone')">
+                  Phone
+                  <i class="fa-solid" [class.fa-sort-up]="sortKey === 'phone' && sortDirection === 'asc'" [class.fa-sort-down]="sortKey === 'phone' && sortDirection === 'desc'" [class.fa-sort]="sortKey !== 'phone'"></i>
+                </th>
+                <th class="table-th">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (s of filteredStudents; track s._id; let i = $index) {
+                <tr class="table-row">
+                  <td class="table-td text-slate-500 text-xs">{{ i + 1 }}</td>
+                  <td class="table-td">
+                    <div class="flex items-center gap-3">
+                      <!-- Render uploaded base64 picture if available -->
+                      @if (s.profileImage) {
+                        <img [src]="s.profileImage" class="w-9 h-9 rounded-full object-cover flex-shrink-0 border border-white/10" alt="Avatar" />
+                      } @else {
+                        <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                             [style.background]="getAvatarColor(s.name)">{{ getInitials(s.name) }}</div>
+                      }
+                      <div>
+                        <div class="text-sm font-semibold text-slate-100">{{ s.name }}</div>
+                        <div class="text-xs text-slate-500">{{ s.email }}</div>
+                      </div>
                     </div>
-                  </div>
-                </td>
-                <td class="table-td">
-                  <span class="badge bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">{{ s.age }} yrs</span>
-                </td>
-                <td class="table-td">
-                  <span class="badge bg-brand-500/10 text-brand-400 border border-brand-500/20">{{ s.studentClass }}</span>
-                </td>
-                <td class="table-td">
+                  </td>
+                  <td class="table-td">
+                    <span class="badge bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">{{ s.age }} yrs</span>
+                  </td>
+                  <td class="table-td">
+                    <span class="badge bg-brand-500/10 text-brand-400 border border-brand-500/20">{{ s.studentClass }}</span>
+                  </td>
+                  <td class="table-td">
+                    <span class="badge" [class]="s.status === 'Active' ? 'badge-active' : s.status === 'Graduated' ? 'badge-graduated' : 'badge-inactive'">
+                      {{ s.status || 'Active' }}
+                    </span>
+                  </td>
+                  <td class="table-td">
+                    <span class="badge" [class]="s.feeStatus === 'Paid' ? 'badge-paid' : s.feeStatus === 'Overdue' ? 'badge-overdue' : 'badge-pending'">
+                      {{ s.feeStatus || 'Pending' }}
+                    </span>
+                  </td>
+                  <td class="table-td text-slate-400 font-mono text-xs">{{ s.phone }}</td>
+                  <td class="table-td">
+                    <div class="flex items-center gap-2">
+                      <a [routerLink]="['/students', s._id]"
+                         class="btn btn-sm btn-icon bg-slate-500/10 border border-slate-500/20 text-slate-400 hover:text-white hover:bg-slate-500/20"
+                         title="View details">
+                        <i class="fa-solid fa-eye text-xs"></i>
+                      </a>
+                      <a [routerLink]="['/students', s._id, 'edit']"
+                         class="btn btn-sm btn-icon bg-brand-500/10 border border-brand-500/20 text-brand-400 hover:bg-brand-500/25"
+                         title="Edit student">
+                        <i class="fa-solid fa-pen-to-square text-xs"></i>
+                      </a>
+                      <button (click)="confirmDelete(s)"
+                              class="btn btn-sm btn-icon bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20"
+                              [id]="'delete-' + s._id" title="Delete student">
+                        <i class="fa-solid fa-trash text-xs"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+
+    <!-- PANEL B: GRID / CARD VIEW -->
+    @if (viewMode === 'grid') {
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 animate-fade-in">
+        @for (s of filteredStudents; track s._id) {
+          <div class="card card-hover p-6 flex flex-col justify-between relative group overflow-hidden">
+            <!-- Corner background pattern icon -->
+            <div class="absolute -right-3 -top-3 text-7xl text-white/[0.01] pointer-events-none group-hover:scale-110 transition-transform"><i class="fa-solid fa-user-graduate"></i></div>
+            
+            <div>
+              <div class="flex items-start justify-between">
+                <!-- Profile Image -->
+                @if (s.profileImage) {
+                  <img [src]="s.profileImage" class="w-14 h-14 rounded-2xl object-cover border border-white/10 shadow-lg" alt="Avatar" />
+                } @else {
+                  <div class="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-lg font-bold shadow-lg"
+                       [style.background]="getAvatarColor(s.name)">{{ getInitials(s.name) }}</div>
+                }
+
+                <div class="flex flex-col gap-1.5 items-end">
                   <span class="badge" [class]="s.status === 'Active' ? 'badge-active' : s.status === 'Graduated' ? 'badge-graduated' : 'badge-inactive'">
                     {{ s.status || 'Active' }}
                   </span>
-                </td>
-                <td class="table-td">
                   <span class="badge" [class]="s.feeStatus === 'Paid' ? 'badge-paid' : s.feeStatus === 'Overdue' ? 'badge-overdue' : 'badge-pending'">
                     {{ s.feeStatus || 'Pending' }}
                   </span>
-                </td>
-                <td class="table-td text-slate-400 font-mono text-xs">{{ s.phone }}</td>
-                <td class="table-td">
-                  <div class="flex items-center gap-2">
-                    <a [routerLink]="['/students', s._id]"
-                       class="btn btn-sm btn-icon bg-slate-500/10 border border-slate-500/20 text-slate-400 hover:text-white hover:bg-slate-500/20"
-                       title="View details">
-                      <i class="fa-solid fa-eye text-xs"></i>
-                    </a>
-                    <a [routerLink]="['/students', s._id, 'edit']"
-                       class="btn btn-sm btn-icon bg-brand-500/10 border border-brand-500/20 text-brand-400 hover:bg-brand-500/25"
-                       title="Edit student">
-                      <i class="fa-solid fa-pen-to-square text-xs"></i>
-                    </a>
-                    <button (click)="confirmDelete(s)"
-                            class="btn btn-sm btn-icon bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20"
-                            [id]="'delete-' + s._id" title="Delete student">
-                      <i class="fa-solid fa-trash text-xs"></i>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+                </div>
+              </div>
+
+              <!-- Info -->
+              <div class="mt-4">
+                <h4 class="font-heading text-lg font-bold text-white truncate">{{ s.name }}</h4>
+                <p class="text-xs text-slate-500 truncate mt-0.5">{{ s.email }}</p>
+                <div class="flex items-center gap-2 mt-3.5 text-xs text-slate-400">
+                  <span class="badge bg-brand-500/10 text-brand-400 border border-brand-500/20 font-semibold">{{ s.studentClass }}</span>
+                  <span class="badge bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 font-semibold">{{ s.age }} yrs</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Actions -->
+            <div class="mt-6 pt-4 border-t border-white/[0.05] flex justify-between items-center">
+              <span class="text-[10px] font-mono text-slate-500">{{ s.rollNumber || 'No Roll' }}</span>
+              <div class="flex gap-1.5">
+                <a [routerLink]="['/students', s._id]" class="btn btn-sm btn-icon bg-slate-500/10 border border-slate-500/20 text-slate-400 hover:text-white hover:bg-slate-500/25">
+                  <i class="fa-solid fa-eye text-xs"></i>
+                </a>
+                <a [routerLink]="['/students', s._id, 'edit']" class="btn btn-sm btn-icon bg-brand-500/10 border border-brand-500/20 text-brand-400 hover:bg-brand-500/25">
+                  <i class="fa-solid fa-pen-to-square text-xs"></i>
+                </a>
+                <button (click)="confirmDelete(s)" class="btn btn-sm btn-icon bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/25">
+                  <i class="fa-solid fa-trash text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
       </div>
     }
-  </div>
+  }
 </div>
 
 <!-- Delete Confirm Dialog -->
@@ -159,6 +273,78 @@
         <button (click)="cancelDelete()" id="cancel-delete" class="btn btn-ghost">Cancel</button>
         <button (click)="proceedDelete()" id="confirm-delete" class="btn btn-danger">
           <i class="fa-solid fa-trash"></i> Yes, Delete
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Promotion Wizard Modal -->
+@if (showPromoteModal) {
+  <div class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in" id="promote-wizard-modal">
+    <div class="card max-w-md w-full p-6 shadow-2xl animate-slide-up">
+      <div class="flex items-center justify-between mb-5 border-b border-white/[0.06] pb-3">
+        <h3 class="font-heading text-lg font-bold text-white"><i class="fa-solid fa-graduation-cap text-brand-400"></i> Promotion & Graduation Wizard</h3>
+        <button (click)="closePromoteModal()" class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-4">
+        <!-- Action Toggle -->
+        <div>
+          <label class="form-label mb-1.5">Administrative Action</label>
+          <div class="grid grid-cols-2 gap-2 p-1 bg-dark-900 rounded-xl border border-white/[0.06]">
+            <button type="button" (click)="promotionData.action = 'promote'"
+                    class="py-2 rounded-lg text-xs font-semibold transition-all duration-150"
+                    [class.bg-brand-500]="promotionData.action === 'promote'"
+                    [class.text-white]="promotionData.action === 'promote'"
+                    [class.text-slate-400]="promotionData.action !== 'promote'">
+              Promote Class
+            </button>
+            <button type="button" (click)="promotionData.action = 'graduate'"
+                    class="py-2 rounded-lg text-xs font-semibold transition-all duration-150"
+                    [class.bg-brand-500]="promotionData.action === 'graduate'"
+                    [class.text-white]="promotionData.action === 'graduate'"
+                    [class.text-slate-400]="promotionData.action !== 'graduate'">
+              Graduate Class
+            </button>
+          </div>
+        </div>
+
+        <!-- Source Class -->
+        <div>
+          <label class="form-label mb-1.5">Source Class (From)</label>
+          <select [(ngModel)]="promotionData.sourceClass" class="form-control py-2.5" id="promote-source">
+            <option value="">Select Class</option>
+            @for (c of classes; track c) {
+              <option [value]="c">{{ c }}</option>
+            }
+          </select>
+          <span class="text-[10px] text-slate-500 mt-1 block">All active students in this class will be affected.</span>
+        </div>
+
+        <!-- Target Class (only for promotion action) -->
+        @if (promotionData.action === 'promote') {
+          <div>
+            <label class="form-label mb-1.5">Target Class (To)</label>
+            <input type="text" [(ngModel)]="promotionData.targetClass" class="form-control py-2.5" placeholder="e.g. 11th Grade, Class B" id="promote-target"/>
+          </div>
+        }
+      </div>
+
+      <!-- Warning Alert -->
+      <div class="p-3.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs rounded-xl mt-5 leading-relaxed flex gap-2">
+        <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+        <span><strong>Warning:</strong> This bulk operation modifies multiple student records in the database. Ensure your settings are correct before clicking confirm.</span>
+      </div>
+
+      <div class="flex gap-3 justify-end mt-6">
+        <button (click)="closePromoteModal()" class="btn btn-ghost">Cancel</button>
+        <button (click)="executePromotion()" class="btn btn-primary" [disabled]="isProcessingPromotion" id="confirm-promotion-btn">
+          @if (isProcessingPromotion) {
+            <i class="fa-solid fa-spinner fa-spin"></i> Processing...
+          } @else {
+            <i class="fa-solid fa-check"></i> Run Bulk Process
+          }
         </button>
       </div>
     </div>

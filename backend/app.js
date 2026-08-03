@@ -13,6 +13,16 @@ const studentRoutes = require("./routes/student");
 const attendanceRoutes = require("./routes/attendanceRoutes");
 const gradeRoutes = require("./routes/gradeRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const timetableRoutes = require("./routes/timetableRoutes");
+const teacherRoutes = require("./routes/teacherRoutes");
+const behaviorRoutes = require("./routes/behaviorRoutes");
+const ptmRoutes = require("./routes/ptmRoutes");
+const examRoutes = require("./routes/examRoutes");
+const hostelRoutes = require("./routes/hostelRoutes");
+const transportRoutes = require("./routes/transportRoutes");
+const invoiceRoutes = require("./routes/invoiceRoutes");
+const libraryRoutes = require("./routes/libraryRoutes");
+const medicalRoutes = require("./routes/medicalRoutes");
 
 const app = express();
 
@@ -26,7 +36,8 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 }));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(morgan("dev"));
 
 // Routes
@@ -35,6 +46,16 @@ app.use("/api/students", studentRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/grades", gradeRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/timetable", timetableRoutes);
+app.use("/api/teachers", teacherRoutes);
+app.use("/api/behavior", behaviorRoutes);
+app.use("/api/ptm", ptmRoutes);
+app.use("/api/exams", examRoutes);
+app.use("/api/hostel", hostelRoutes);
+app.use("/api/transport", transportRoutes);
+app.use("/api/invoices", invoiceRoutes);
+app.use("/api/library", libraryRoutes);
+app.use("/api/medical", medicalRoutes);
 
 // Health check
 app.get("/", (req, res) => {

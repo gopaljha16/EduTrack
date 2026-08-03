@@ -39,7 +39,32 @@ export class StudentFormComponent implements OnInit {
       admissionDate:[''],
       parentName:   [''],
       parentPhone:  [''],
+      profileImage: [''],
     });
+  }
+
+  onPhotoSelected(event: Event) {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    const file = input.files[0];
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      this.toast.error('Invalid File', 'Please upload a valid image file.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string;
+      this.form.patchValue({ profileImage: base64 });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removePhoto() {
+    this.form.patchValue({ profileImage: '' });
   }
 
   ngOnInit() {

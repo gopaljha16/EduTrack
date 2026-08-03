@@ -72,21 +72,59 @@
             Fee Status
           </h2>
           @if (feeStats) {
-            <div class="space-y-3">
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-slate-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>Paid</span>
-                <span class="font-heading font-bold text-emerald-400">{{ feeStats.paid }}</span>
+            <div class="flex items-center gap-6">
+              <!-- SVG Progress Circle -->
+              <div class="relative w-20 h-20 flex-shrink-0">
+                <svg class="w-full h-full transform -rotate-90">
+                  <circle cx="40" cy="40" r="34" stroke="currentColor" class="text-dark-600" stroke-width="6" fill="transparent" />
+                  <circle cx="40" cy="40" r="34" stroke="currentColor" class="text-emerald-400 transition-all duration-500" stroke-width="6" fill="transparent"
+                          [style.stroke-dasharray]="213.6" [style.stroke-dashoffset]="213.6 - (213.6 * feeCollectionRate / 100)" />
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center font-heading text-base font-bold text-white">{{ feeCollectionRate }}%</div>
               </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-slate-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>Pending</span>
-                <span class="font-heading font-bold text-amber-400">{{ feeStats.pending }}</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-sm text-slate-400 flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-red-400 inline-block"></span>Overdue</span>
-                <span class="font-heading font-bold text-red-400">{{ feeStats.overdue }}</span>
+
+              <!-- Metrics -->
+              <div class="flex-1 space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-slate-400 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span>Paid</span>
+                  <span class="font-semibold text-emerald-400">{{ feeStats.paid }}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-slate-400 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 inline-block"></span>Pending</span>
+                  <span class="font-semibold text-amber-400">{{ feeStats.pending }}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                  <span class="text-slate-400 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-red-400 inline-block"></span>Overdue</span>
+                  <span class="font-semibold text-red-400">{{ feeStats.overdue }}</span>
+                </div>
               </div>
             </div>
           }
+        </div>
+
+        <!-- Class Attendance Leaderboard -->
+        <div class="card p-6">
+          <h2 class="font-heading font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-square-poll-vertical text-emerald-400 text-sm"></i>
+            Class Attendance Leaderboard
+          </h2>
+          <div class="space-y-3">
+            @for (c of classAttendance.slice(0, 5); track c.className) {
+              <div>
+                <div class="flex justify-between text-xs mb-1">
+                  <span class="text-slate-400">Class {{ c.className }}</span>
+                  <span class="text-emerald-400 font-semibold font-mono">{{ c.rate }}%</span>
+                </div>
+                <div class="h-1.5 bg-dark-600 rounded-full overflow-hidden">
+                  <div class="h-full bg-emerald-400 rounded-full transition-all duration-500"
+                       [style.width.%]="c.rate"></div>
+                </div>
+              </div>
+            }
+            @empty {
+              <p class="text-slate-500 text-xs text-center py-4">No daily attendance logs found.</p>
+            }
+          </div>
         </div>
 
         <!-- Class Distribution -->
@@ -110,6 +148,38 @@
             }
             @empty {
               <p class="text-slate-500 text-xs">No data yet.</p>
+            }
+          </div>
+        </div>
+
+        <!-- Activity Logs -->
+        <div class="card p-6">
+          <h2 class="font-heading font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-list-check text-brand-400 text-sm"></i>
+            System Activity Log
+          </h2>
+          <div class="space-y-4">
+            @for (log of recentLogs; track log._id) {
+              <div class="flex items-start gap-3 text-xs border-b border-white/[0.04] pb-3 last:border-b-0 last:pb-0">
+                <div class="w-2 h-2 rounded-full mt-1.5 flex-shrink-0"
+                     [class.bg-brand-400]="log.action === 'Enrollment'"
+                     [class.bg-emerald-400]="log.action === 'Finance'"
+                     [class.bg-cyan-400]="log.action === 'Academics'"
+                     [class.bg-amber-400]="log.action === 'Update Profile'"
+                     [class.bg-red-400]="log.action === 'Deletion'"
+                     [class.bg-slate-400]="log.action === 'Import'"></div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-slate-300 font-semibold truncate">{{ log.action }}</p>
+                  <p class="text-slate-500 mt-0.5 leading-relaxed">{{ log.details }}</p>
+                  <div class="flex items-center justify-between text-[9px] text-slate-600 mt-1">
+                    <span>By: {{ log.performedBy }}</span>
+                    <span>{{ log.timestamp | date:'shortTime' }}</span>
+                  </div>
+                </div>
+              </div>
+            }
+            @empty {
+              <p class="text-slate-500 text-xs text-center py-4">No recent activities logged.</p>
             }
           </div>
         </div>

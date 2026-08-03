@@ -1,0 +1,141 @@
+<div class="p-8">
+  <!-- Page Header -->
+  <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+    <div>
+      <h1 class="font-heading text-3xl font-bold text-white">Class Timetable</h1>
+      <p class="text-slate-400 text-sm mt-1">Manage weekly subject periods, teachers, and classroom locations</p>
+    </div>
+    @if (selectedClass) {
+      <button (click)="openModal()" class="btn btn-primary" id="add-period-btn">
+        <i class="fa-solid fa-plus"></i> Add Time Slot
+      </button>
+    }
+  </div>
+
+  <!-- Filters / Toolbar -->
+  <div class="card p-5 mb-6">
+    <div class="flex flex-wrap items-end gap-4">
+      <div class="form-group min-w-[200px]">
+        <label class="form-label mb-2"><i class="fa-solid fa-chalkboard"></i> Selected Class</label>
+        <select [(ngModel)]="selectedClass" (change)="loadTimetable()" class="form-control" id="timetable-class">
+          @for (c of classes; track c) {
+            <option [value]="c">{{ c }}</option>
+          }
+          @empty {
+            <option value="">No Classes Found</option>
+          }
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Days Tabs -->
+  <div class="border-b border-white/[0.06] flex gap-2 mb-6 overflow-x-auto pb-px">
+    @for (day of daysOfWeek; track day) {
+      <button (click)="activeDay = day"
+              class="px-5 py-3 border-b-2 font-heading text-sm font-semibold transition-all duration-200"
+              [class]="activeDay === day ? 'border-brand-500 text-brand-400' : 'border-transparent text-slate-400 hover:text-slate-200'">
+        {{ day }}
+      </button>
+    }
+  </div>
+
+  <!-- Active Day Schedule -->
+  <div class="space-y-4">
+    @if (isLoading) {
+      <div class="flex flex-col items-center justify-center py-16">
+        <div class="w-10 h-10 border-4 border-dark-600 border-t-brand-500 rounded-full animate-spin mb-3"></div>
+        <p class="text-slate-500 text-sm">Loading schedules...</p>
+      </div>
+    } @else if (getFilteredSchedules(activeDay).length === 0) {
+      <div class="card p-12 text-center text-slate-500">
+        <div class="text-4xl mb-3 text-slate-600"><i class="fa-solid fa-calendar-xmark"></i></div>
+        <h3 class="font-heading font-semibold text-slate-300 text-lg mb-1">No classes scheduled</h3>
+        <p class="text-slate-500 text-sm">No subject periods added for {{ activeDay }} in Class "{{ selectedClass }}".</p>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
+        @for (period of getFilteredSchedules(activeDay); track period._id) {
+          <div class="card p-5 hover:border-brand-500/30 transition-all duration-200 flex items-start justify-between relative group">
+            <div class="flex gap-4">
+              <!-- Time Icon/Indicator -->
+              <div class="w-12 h-12 rounded-xl bg-gradient-brand/5 border border-brand-500/20 text-brand-400 flex flex-col items-center justify-center flex-shrink-0">
+                <i class="fa-solid fa-clock text-sm"></i>
+                <span class="text-[9px] font-bold font-mono mt-0.5">{{ period.startTime }}</span>
+              </div>
+              
+              <div>
+                <h4 class="font-heading font-bold text-slate-100 text-base">{{ period.subject }}</h4>
+                <div class="flex flex-wrap gap-x-4 gap-y-1.5 mt-2 text-xs text-slate-400">
+                  <span class="flex items-center gap-1.5"><i class="fa-solid fa-user-tie text-brand-400"></i> {{ period.teacher || 'Assign Teacher' }}</span>
+                  <span class="flex items-center gap-1.5"><i class="fa-solid fa-location-dot text-cyan-400"></i> {{ period.room ? 'Room ' + period.room : 'Assign Room' }}</span>
+                  <span class="flex items-center gap-1.5"><i class="fa-solid fa-hourglass-half text-amber-400"></i> {{ period.startTime }} - {{ period.endTime }}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Delete Slot button -->
+            <button (click)="deletePeriod(period._id)" class="btn btn-sm btn-icon bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-150" title="Delete entry">
+              <i class="fa-solid fa-trash text-xs"></i>
+            </button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Add Period Modal -->
+@if (showAddModal) {
+  <div class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in" id="add-period-modal">
+    <div class="card max-w-md w-full p-6 shadow-2xl animate-slide-up">
+      <div class="flex items-center justify-between mb-5 border-b border-white/[0.06] pb-3">
+        <h3 class="font-heading text-lg font-bold text-white"><i class="fa-solid fa-plus text-brand-400"></i> Add Time Slot</h3>
+        <button (click)="closeModal()" class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="form-label mb-1.5">Subject Name</label>
+          <input type="text" [(ngModel)]="newPeriod.subject" class="form-control" placeholder="e.g. Mathematics, Science" id="period-subject"/>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="form-label mb-1.5">Start Time</label>
+            <input type="time" [(ngModel)]="newPeriod.startTime" class="form-control" id="period-start"/>
+          </div>
+          <div>
+            <label class="form-label mb-1.5">End Time</label>
+            <input type="time" [(ngModel)]="newPeriod.endTime" class="form-control" id="period-end"/>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="form-label mb-1.5">Teacher Name</label>
+            <input type="text" [(ngModel)]="newPeriod.teacher" class="form-control" placeholder="Optional" id="period-teacher"/>
+          </div>
+          <div>
+            <label class="form-label mb-1.5">Classroom / Room No.</label>
+            <input type="text" [(ngModel)]="newPeriod.room" class="form-control" placeholder="Optional" id="period-room"/>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label mb-1.5">Day of Week</label>
+          <select [(ngModel)]="newPeriod.day" class="form-control" id="period-day">
+            @for (day of daysOfWeek; track day) {
+              <option [value]="day">{{ day }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="flex gap-3 justify-end mt-6">
+        <button (click)="closeModal()" class="btn btn-ghost">Cancel</button>
+        <button (click)="addPeriod()" class="btn btn-primary" id="save-period-btn">Add Slot</button>
+      </div>
+    </div>
+  </div>
+}

@@ -1,4 +1,6 @@
 const Grade = require("../models/Grade");
+const Student = require("../models/Student");
+const ActivityLog = require("../models/ActivityLog");
 
 /**
  * @desc    Add a grade/marks record for a student
@@ -25,6 +27,12 @@ const addGrade = async (req, res, next) => {
       examDate,
       remarks,
     });
+
+    // Log this action
+    const studentInfo = await Student.findById(student).select("name");
+    if (studentInfo) {
+      await ActivityLog.log("Academics", `Logged ${subject} marks (${marksObtained}/${maxMarks}) for ${studentInfo.name}`, req.user.name);
+    }
 
     res.status(201).json({
       status: "success",

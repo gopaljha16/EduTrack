@@ -68,3 +68,176 @@
   .input-icon { @apply absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-sm pointer-events-none; }
   .input-with-icon { @apply pl-10; }
 }
+
+/* Print Styles */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #1e293b !important;
+    font-size: 12pt !important;
+  }
+  
+  aside, .no-print, button, a[routerLink], .modal-overlay {
+    display: none !important;
+  }
+  
+  main {
+    margin-left: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+
+  .card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+    color: #1e293b !important;
+  }
+
+  h1, h2, h3, h4, .text-white {
+    color: #0f172a !important;
+  }
+
+  .text-slate-400, .text-slate-500, .text-slate-300 {
+    color: #475569 !important;
+  }
+
+  table {
+    border: 1px solid #e2e8f0 !important;
+  }
+
+  thead th {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    border-bottom: 2px solid #e2e8f0 !important;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #e2e8f0 !important;
+    background: #ffffff !important;
+  }
+
+  tbody td {
+    color: #334155 !important;
+  }
+
+  .badge {
+    border: 1px solid #cbd5e1 !important;
+    color: #1e293b !important;
+    background: #f1f5f9 !important;
+  }
+
+  // ID Card printing overrides
+  body:has(.print-id-card-element) {
+    background: transparent !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    height: 100vh !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    margin: 0 !important;
+
+    // Hide entire page contents
+    aside, main, .no-print, header, footer {
+      display: none !important;
+    }
+
+    // Centering the overlay for actual print output
+    #id-card-modal {
+      background: transparent !important;
+      position: relative !important;
+      inset: auto !important;
+      display: block !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .print-id-card-element {
+      visibility: visible !important;
+      display: flex !important;
+      position: absolute !important;
+      left: 50% !important;
+      top: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      border: 1px solid rgba(255,255,255,0.15) !important;
+      background-color: #0d1220 !important;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+  }
+
+  // Report Card printing overrides
+  body:has(.print-report-card-element) {
+    background: #ffffff !important;
+    color: #1e293b !important;
+    padding: 0 !important;
+    margin: 0 !important;
+
+    // Hide everything else
+    aside, main, .no-print, header, footer {
+      display: none !important;
+    }
+
+    #report-card-modal {
+      background: transparent !important;
+      position: static !important;
+      display: block !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .print-report-card-element {
+      visibility: visible !important;
+      display: block !important;
+      border: none !important;
+      background-color: #ffffff !important;
+      color: #1e293b !important;
+      box-shadow: none !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      height: auto !important;
+      padding: 2rem !important;
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+  }
+}
+
+/* Premium Thin Custom Scrollbar Utility */
+.scrollbar-thin {
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent !important;
+
+  &::-webkit-scrollbar {
+    height: 5px !important;
+    width: 5px !important;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border-radius: 99px !important;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12) !important;
+    border-radius: 99px !important;
+    border: 1px solid transparent !important;
+    background-clip: padding-box !important;
+  }
+  
+  &::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+  }
+}
+
+.scrollbar-none {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  &::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+}
+

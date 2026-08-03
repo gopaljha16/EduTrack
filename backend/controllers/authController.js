@@ -106,4 +106,44 @@ const getMe = async (req, res) => {
   });
 };
 
-module.exports = { register, login, getMe };
+/**
+ * @desc    Update user password
+ * @route   PUT /api/auth/update-password
+ * @access  Private
+ */
+const updatePassword = async (req, res, next) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        status: "error",
+        message: "Please provide current and new passwords.",
+      });
+    }
+
+    // Get user with password select field
+    const user = await User.findById(req.user.id).select("+password");
+
+    // Check current password
+    if (!(await user.matchPassword(currentPassword))) {
+      return res.status(401).json({
+        status: "error",
+        message: "Incorrect current password.",
+      });
+    }
+
+    // Set new password
+    user.password = newPassword;
+    await user.save(); // Model's pre-save hook will hash it
+
+    res.status(200).json({
+      status: "success",
+      message: "Password updated successfully.",
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { register, login, getMe, updatePassword };

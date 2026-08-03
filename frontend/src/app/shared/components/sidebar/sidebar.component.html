@@ -17,7 +17,7 @@
       <a
         [routerLink]="link.route"
         routerLinkActive="active"
-        [routerLinkActiveOptions]="{ exact: link.route === '/students' || link.route === '/dashboard' }"
+        [routerLinkActiveOptions]="{ exact: link.route === '/students' || link.route === '/dashboard' || link.route === '/teachers' || link.route === '/exams' }"
         class="sidebar-link"
       >
         <i class="fa-solid {{ link.icon }} w-4 text-center"></i>
@@ -39,9 +39,53 @@
         </div>
       </div>
     }
+    <button (click)="showPasswordModal = true" class="btn btn-ghost w-full justify-start text-slate-400 hover:text-white border-0 bg-transparent hover:bg-white/[0.05] py-2 mb-2">
+      <i class="fa-solid fa-key"></i>
+      Change Password
+    </button>
     <button (click)="logout()" class="btn btn-ghost w-full justify-start text-red-400 hover:text-red-300 hover:bg-red-500/10 border-red-500/10">
       <i class="fa-solid fa-right-from-bracket"></i>
       Logout
     </button>
   </div>
 </aside>
+
+<!-- Change Password Modal -->
+@if (showPasswordModal) {
+  <div class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
+    <div class="card max-w-sm w-full p-6 shadow-2xl animate-slide-up">
+      <div class="flex items-center justify-between mb-5 border-b border-white/[0.06] pb-3">
+        <h3 class="font-heading text-lg font-bold text-white"><i class="fa-solid fa-lock text-brand-400"></i> Change Password</h3>
+        <button (click)="closeModal()" class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <form (ngSubmit)="updatePassword()">
+        <div class="space-y-4">
+          <div>
+            <label class="form-label mb-1.5">Current Password</label>
+            <input type="password" [(ngModel)]="passwordData.currentPassword" name="currentPassword" class="form-control" placeholder="••••••••" required id="setting-old-pass"/>
+          </div>
+          <div>
+            <label class="form-label mb-1.5">New Password</label>
+            <input type="password" [(ngModel)]="passwordData.newPassword" name="newPassword" class="form-control" placeholder="Min 6 characters" required id="setting-new-pass"/>
+          </div>
+          <div>
+            <label class="form-label mb-1.5">Confirm New Password</label>
+            <input type="password" [(ngModel)]="passwordData.confirmPassword" name="confirmPassword" class="form-control" placeholder="Re-type new password" required id="setting-confirm-pass"/>
+          </div>
+        </div>
+
+        <div class="flex gap-3 justify-end mt-6">
+          <button type="button" (click)="closeModal()" class="btn btn-ghost">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="isUpdating">
+            @if (isUpdating) {
+              <i class="fa-solid fa-spinner fa-spin"></i> Saving...
+            } @else {
+              <i class="fa-solid fa-floppy-disk"></i> Save Password
+            }
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

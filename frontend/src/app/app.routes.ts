@@ -33,6 +33,21 @@ export const routes: Routes = [
     loadComponent: () => import('./features/attendance/attendance.component').then(m => m.AttendanceComponent),
   },
   {
+    path: 'timetable',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/timetable/timetable.component').then(m => m.TimetableComponent),
+  },
+  {
+    path: 'teachers',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/teachers/teachers.component').then(m => m.TeachersComponent),
+  },
+  {
+    path: 'exams',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/exams/exams.component').then(m => m.ExamsComponent),
+  },
+  {
     path: 'students/new',
     canActivate: [authGuard],
     loadComponent: () => import('./features/students/student-form/student-form.component').then(m => m.StudentFormComponent),

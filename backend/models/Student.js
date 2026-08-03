@@ -66,9 +66,23 @@ const studentSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    profileImage: {
+      type: String, // Base64 data URI
+    },
   },
   { timestamps: true }
 );
+
+// Auto-generate roll number if not provided
+studentSchema.pre("save", async function () {
+  if (this.rollNumber) return; // Skip if already set
+  
+  const year = new Date(this.admissionDate || Date.now()).getFullYear();
+  const count = await mongoose.model("Student").countDocuments();
+  const sequence = String(count + 1).padStart(3, "0");
+  
+  this.rollNumber = `EDU-${year}-${sequence}`;
+});
 
 const Student = mongoose.model("Student", studentSchema);
 module.exports = Student;

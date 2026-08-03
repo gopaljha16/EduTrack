@@ -17,6 +17,7 @@ export interface Student {
   rollNumber?: string;
   parentName?: string;
   parentPhone?: string;
+  profileImage?: string;
   createdAt?: string;
 }
 
@@ -58,6 +59,14 @@ export class StudentService {
 
   getStats(): Observable<any> {
     return this.http.get(`${this.apiUrl}/stats`);
+  }
+
+  importStudents(students: Partial<Student>[]): Observable<any> {
+    return this.http.post(`${this.apiUrl}/import`, { students });
+  }
+
+  promoteClass(data: { sourceClass: string; targetClass?: string; action: 'promote' | 'graduate' }): Observable<any> {
+    return this.http.put(`${this.apiUrl}/promote`, data);
   }
 
   exportCsv(students: Student[]): void {

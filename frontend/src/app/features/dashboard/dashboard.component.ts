@@ -33,6 +33,21 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  get feeCollectionRate(): number {
+    if (!this.stats || !this.stats.fee) return 0;
+    const { paid, pending, overdue } = this.stats.fee;
+    const total = paid + pending + overdue;
+    if (total === 0) return 0;
+    return Math.round((paid / total) * 100);
+  }
+
+  get activeRate(): number {
+    if (!this.stats || !this.stats.total) return 0;
+    const { active, total } = this.stats;
+    if (total === 0) return 0;
+    return Math.round((active / total) * 100);
+  }
+
   getStatValue(key: string): any {
     if (!this.stats) return '—';
     return this.stats[key] ?? '—';
@@ -51,6 +66,8 @@ export class DashboardComponent implements OnInit {
   get feeStats() { return this.stats?.fee; }
   get recentStudents() { return this.stats?.recentStudents || []; }
   get classDistribution() { return this.stats?.classDistribution || []; }
+  get recentLogs() { return this.stats?.recentLogs || []; }
+  get classAttendance() { return this.stats?.classAttendance || []; }
 
   getAvatarColor(name: string): string {
     const colors = ['#7c6cf8','#22d3ee','#10b981','#f59e0b','#ec4899','#ef4444','#8b5cf6','#14b8a6'];

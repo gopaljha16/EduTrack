@@ -1,0 +1,166 @@
+<div class="p-8">
+  <!-- Page Header -->
+  <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
+    <div>
+      <h1 class="font-heading text-3xl font-bold text-white">Teachers</h1>
+      <p class="text-slate-400 text-sm mt-1">Manage staff details, classroom specializations, and advisory roles</p>
+    </div>
+    <button (click)="showAddModal = true" class="btn btn-primary" id="add-teacher-btn">
+      <i class="fa-solid fa-plus"></i> Add Teacher
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="card p-4 mb-6">
+    <div class="flex flex-wrap gap-3">
+      <div class="input-wrapper flex-1 min-w-[250px]">
+        <i class="input-icon fa-solid fa-magnifying-glass"></i>
+        <input type="text" [(ngModel)]="search" (ngModelChange)="applyFilter()"
+               class="form-control input-with-icon" placeholder="Search by name, email, subject..." id="teacher-search"/>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table list -->
+  <div class="table-container animate-fade-in">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-white/[0.06]">
+      <span class="text-sm font-semibold text-white flex items-center gap-2">
+        <i class="fa-solid fa-user-tie text-brand-400 text-sm"></i>
+        All Academic Staff
+        <span class="bg-brand-500/15 text-brand-400 border border-brand-500/25 text-xs font-semibold px-2.5 py-0.5 rounded-full">{{ filteredTeachers.length }}</span>
+      </span>
+    </div>
+
+    @if (isLoading) {
+      <div class="flex flex-col items-center justify-center py-20">
+        <div class="w-10 h-10 border-4 border-dark-600 border-t-brand-500 rounded-full animate-spin mb-3"></div>
+        <p class="text-slate-500 text-sm">Loading staff directory...</p>
+      </div>
+    } @else if (filteredTeachers.length === 0) {
+      <div class="flex flex-col items-center justify-center py-16 text-center">
+        <div class="w-16 h-16 rounded-full bg-dark-600 flex items-center justify-center text-3xl text-slate-600 mb-4">
+          <i class="fa-solid fa-users-slash"></i>
+        </div>
+        <h3 class="font-heading font-semibold text-slate-300 text-lg mb-1">No teachers found</h3>
+        <p class="text-slate-500 text-sm">Add teachers to assign timetables and class advisors.</p>
+      </div>
+    } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead>
+            <tr>
+              <th class="table-th">#</th>
+              <th class="table-th">Teacher</th>
+              <th class="table-th">Specialization</th>
+              <th class="table-th">Class Advisor</th>
+              <th class="table-th">Status</th>
+              <th class="table-th">Phone</th>
+              <th class="table-th">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (t of filteredTeachers; track t._id; let i = $index) {
+              <tr class="table-row">
+                <td class="table-td text-slate-500 text-xs">{{ i + 1 }}</td>
+                <td class="table-td">
+                  <div class="flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-full flex items-center justify-center text-white text-xs font-bold flex-shrink-0"
+                         [style.background]="getAvatarColor(t.name)">{{ getInitials(t.name) }}</div>
+                    <div>
+                      <div class="text-sm font-semibold text-slate-100">{{ t.name }}</div>
+                      <div class="text-xs text-slate-500">{{ t.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="table-td">
+                  <span class="badge bg-brand-500/10 text-brand-400 border border-brand-500/20">{{ t.specialization }}</span>
+                </td>
+                <td class="table-td font-semibold text-slate-300">
+                  {{ t.assignedClass ? 'Class ' + t.assignedClass : '—' }}
+                </td>
+                <td class="table-td">
+                  <span class="badge" [class]="t.status === 'Active' ? 'badge-active' : 'badge-inactive'">
+                    {{ t.status }}
+                  </span>
+                </td>
+                <td class="table-td text-slate-400 font-mono text-xs">{{ t.phone }}</td>
+                <td class="table-td">
+                  <div class="flex items-center gap-2">
+                    <button (click)="openEdit(t)" class="btn btn-sm btn-icon bg-brand-500/10 border border-brand-500/20 text-brand-400 hover:bg-brand-500/20" title="Edit Profile">
+                      <i class="fa-solid fa-pen-to-square text-xs"></i>
+                    </button>
+                    <button (click)="deleteTeacher(t._id!, t.name)" class="btn btn-sm btn-icon bg-red-500/10 border border-red-500/20 text-red-400 hover:bg-red-500/20" title="Delete record">
+                      <i class="fa-solid fa-trash text-xs"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
+</div>
+
+<!-- Add/Edit Teacher Modal -->
+@if (showAddModal) {
+  <div class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in" id="add-teacher-modal">
+    <div class="card max-w-md w-full p-6 shadow-2xl animate-slide-up">
+      <div class="flex items-center justify-between mb-5 border-b border-white/[0.06] pb-3">
+        <h3 class="font-heading text-lg font-bold text-white">
+          <i class="fa-solid fa-user-plus text-brand-400"></i> {{ isEditMode ? 'Edit Staff Profile' : 'Register New Teacher' }}
+        </h3>
+        <button (click)="closeModal()" class="text-slate-500 hover:text-slate-300"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="form-label mb-1.5">Full Name</label>
+          <input type="text" [(ngModel)]="newTeacher.name" class="form-control py-2.5" placeholder="e.g. Mrs. Asha Sen" id="teacher-name"/>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="form-label mb-1.5">Email Address</label>
+            <input type="email" [(ngModel)]="newTeacher.email" class="form-control py-2.5" placeholder="sen@school.com" id="teacher-email"/>
+          </div>
+          <div>
+            <label class="form-label mb-1.5">Phone Number</label>
+            <input type="text" [(ngModel)]="newTeacher.phone" class="form-control py-2.5" placeholder="10 digit number" id="teacher-phone"/>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="form-label mb-1.5">Specialization</label>
+            <input type="text" [(ngModel)]="newTeacher.specialization" class="form-control py-2.5" placeholder="e.g. Physics, Chemistry" id="teacher-spec"/>
+          </div>
+          <div>
+            <label class="form-label mb-1.5">Class Advisor (Optional)</label>
+            <input type="text" [(ngModel)]="newTeacher.assignedClass" class="form-control py-2.5" placeholder="e.g. 10th Class" id="teacher-class"/>
+          </div>
+        </div>
+
+        <div>
+          <label class="form-label mb-1.5">Working Status</label>
+          <select [(ngModel)]="newTeacher.status" class="form-control py-2.5" id="teacher-status">
+            <option value="Active">Active Duty</option>
+            <option value="Inactive">On Leave / Inactive</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex gap-3 justify-end mt-6">
+        <button (click)="closeModal()" class="btn btn-ghost">Cancel</button>
+        <button (click)="save()" class="btn btn-primary" [disabled]="isSaving" id="save-teacher-btn">
+          @if (isSaving) {
+            <i class="fa-solid fa-spinner fa-spin"></i> Saving...
+          } @else {
+            <i class="fa-solid fa-floppy-disk"></i> {{ isEditMode ? 'Update Staff' : 'Add Teacher' }}
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

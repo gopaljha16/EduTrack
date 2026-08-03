@@ -1,5 +1,7 @@
 const Payment = require("../models/Payment");
 const Student = require("../models/Student");
+const ActivityLog = require("../models/ActivityLog");
+const Invoice = require("../models/Invoice");
 
 /**
  * @desc    Record a fee payment for a student
@@ -26,14 +28,29 @@ const addPayment = async (req, res, next) => {
       remarks,
     });
 
-    // Optionally auto-update Student's fee status to Paid
-    // For simplicity, we can set it to Paid if a payment is made,
-    // or let the admin adjust status on Student detail page.
-    await Student.findByIdAndUpdate(student, { feeStatus: "Paid" });
+    // Match and pay off the oldest pending/overdue invoice for this student
+    const pendingInvoice = await Invoice.findOne({
+      student,
+      status: { $ne: "Paid" },
+    }).sort({ dueDate: 1 });
+
+    if (pendingInvoice) {
+      pendingInvoice.status = "Paid";
+      pendingInvoice.paymentReference = payment._id;
+      await pendingInvoice.save();
+    }
+
+    // Auto-update Student's fee status to Paid
+    const studentInfo = await Student.findByIdAndUpdate(student, { feeStatus: "Paid" });
+
+    // Log the action
+    if (studentInfo) {
+      await ActivityLog.log("Finance", `Logged ₹${amount} fee payment for ${studentInfo.name}`, req.user.name);
+    }
 
     res.status(201).json({
       status: "success",
-      message: "Payment recorded successfully. Fee status updated to Paid.",
+      message: "Payment recorded successfully. Oldest pending invoice marked as Paid.",
       payment,
     });
   } catch (err) {
