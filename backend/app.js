@@ -31,15 +31,18 @@ const app = express();
 connectDB();
 
 // Middleware
-const allowedOrigins = [
-  'http://localhost:4200',
-  process.env.CLIENT_URL,
-  process.env.FRONTEND_URL
-].filter(Boolean);
+const clientUrls = (process.env.CLIENT_URL || process.env.FRONTEND_URL || '')
+  .split(',')
+  .map(url => url.trim())
+  .filter(Boolean);
+
+const allowedOrigins = ['http://localhost:4200', ...clientUrls];
 
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+    if (!origin) return callback(null, true);
+    if (clientUrls.includes('*')) return callback(null, true);
+    if (allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
       return callback(null, true);
     }
     return callback(null, true);
@@ -70,8 +73,8 @@ app.use("/api/library", libraryRoutes);
 app.use("/api/medical", medicalRoutes);
 
 // Health check
-app.get("/", (req, res) => {
-  res.json({ status: "success", message: "EduTrack API is running 🚀" });
+app.get(["/", "/api"], (req, res) => {
+  res.json({ status: "success", message: "EduTrack API is running 🚀", timestamp: new Date().toISOString() });
 });
 
 // Global error handler (must be last)
