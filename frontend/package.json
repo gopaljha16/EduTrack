@@ -2,7 +2,7 @@
   "name": "frontend",
   "version": "0.0.0",
   "scripts": {
-    "ng": "ng",
+    "ng": "npx ng",
     "prestart": "node scripts/set-env.js",
     "prebuild": "node scripts/set-env.js",
     "start": "ng serve",
