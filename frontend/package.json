@@ -7,7 +7,7 @@
     "prebuild": "node scripts/set-env.js",
     "start": "./node_modules/.bin/ng serve",
     "build": "node scripts/set-env.js && ./node_modules/.bin/ng build",
-    "postinstall": "node scripts/set-env.js || true",
+    "postinstall": "node scripts/set-env.js || true && ln -sf $(pwd)/node_modules/.bin/ng /usr/local/bin/ng 2>/dev/null || true",
     "watch": "./node_modules/.bin/ng build --watch --configuration development",
     "test": "./node_modules/.bin/ng test"
   },
