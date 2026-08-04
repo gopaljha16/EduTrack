@@ -1,0 +1,21 @@
+#!/usr/bin/env node
+// This script ensures Angular CLI runs from local node_modules
+// even when Vercel calls `ng build` directly (without npm run)
+
+const { execFileSync } = require('child_process');
+const path = require('path');
+const fs = require('fs');
+
+const ngBin = path.resolve(__dirname, '..', 'node_modules', '.bin', 'ng');
+
+if (!fs.existsSync(ngBin)) {
+  console.error('❌ Angular CLI not found at:', ngBin);
+  process.exit(1);
+}
+
+const args = process.argv.slice(2);
+try {
+  execFileSync(ngBin, args, { stdio: 'inherit' });
+} catch (e) {
+  process.exit(e.status || 1);
+}

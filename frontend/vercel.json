@@ -1,6 +1,8 @@
 {
   "buildCommand": "node scripts/set-env.js && ./node_modules/.bin/ng build",
+  "installCommand": "npm install",
   "outputDirectory": "dist/frontend/browser",
+  "framework": null,
   "rewrites": [
     {
       "source": "/(.*)",
