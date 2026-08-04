@@ -36,6 +36,14 @@ ng build
 
 This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
+## Vercel deployment
+
+Set the Vercel project's **Root Directory** to `frontend` and leave the dashboard
+**Build Command** blank so that `vercel.json` is used. It runs `npm run build`,
+which invokes the Angular CLI from this project's local dependencies. Do not set
+the build command to `ng build`, because the `ng` executable is not installed
+globally on Vercel.
+
 ## Running unit tests
 
 To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
