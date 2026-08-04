@@ -1,29 +1,36 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 export interface Student {
   _id?: string;
   name: string;
-  age: number;
-  email: string;
-  studentClass: string;
-  address: string;
-  phone: string;
-  gender?: 'Male' | 'Female' | 'Other';
-  status?: 'Active' | 'Inactive' | 'Graduated';
-  feeStatus?: 'Paid' | 'Pending' | 'Overdue';
-  admissionDate?: string;
   rollNumber?: string;
+  email?: string;
+  studentClass: string;
+  section?: string;
+  gender?: string;
+  age?: number;
+  phone?: string;
   parentName?: string;
   parentPhone?: string;
+  dateOfBirth?: string;
+  bloodGroup?: string;
+  guardianName?: string;
+  guardianPhone?: string;
+  guardianEmail?: string;
+  address?: string;
+  admissionDate?: string;
+  status?: 'Active' | 'Inactive' | 'Graduated' | 'Suspended' | string;
+  feeStatus?: 'Paid' | 'Pending' | 'Overdue' | string;
   profileImage?: string;
   createdAt?: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class StudentService {
-  private apiUrl = 'http://localhost:3000/api/students';
+  private apiUrl = `${environment.apiUrl}/students`;
 
   constructor(private http: HttpClient) {}
 

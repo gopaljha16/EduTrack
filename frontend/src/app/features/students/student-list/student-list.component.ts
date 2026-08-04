@@ -59,7 +59,7 @@ export class StudentListComponent implements OnInit {
   applyFilters() {
     let result = this.students.filter(s => {
       const q = this.search.toLowerCase();
-      const matchSearch = !q || s.name.toLowerCase().includes(q) || s.email.toLowerCase().includes(q) || String(s.phone).includes(q);
+      const matchSearch = !q || (s.name && s.name.toLowerCase().includes(q)) || (s.email && s.email.toLowerCase().includes(q)) || (s.phone && String(s.phone).includes(q));
       const matchClass  = !this.filterClass  || s.studentClass === this.filterClass;
       const matchStatus = !this.filterStatus || s.status === this.filterStatus;
       const matchFee    = !this.filterFee    || s.feeStatus === this.filterFee;

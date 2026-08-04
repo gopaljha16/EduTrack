@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class BehaviorService {
-  private apiUrl = 'http://localhost:3000/api/behavior';
+  private apiUrl = `${environment.apiUrl}/behavior`;
 
   constructor(private http: HttpClient) {}
 

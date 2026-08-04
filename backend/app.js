@@ -4,6 +4,7 @@ const cors = require("cors");
 const morgan = require("morgan");
 
 dotenv.config({ path: "./config/config.env" });
+dotenv.config();
 
 const connectDB = require("./config/db");
 const { errorHandler } = require("./middleware/errorMiddleware");
@@ -30,8 +31,19 @@ const app = express();
 connectDB();
 
 // Middleware
+const allowedOrigins = [
+  'http://localhost:4200',
+  process.env.CLIENT_URL,
+  process.env.FRONTEND_URL
+].filter(Boolean);
+
 app.use(cors({
-  origin: ['http://localhost:4200'],
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.length === 0 || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, true);
+  },
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
