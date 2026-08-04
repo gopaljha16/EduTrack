@@ -2,13 +2,13 @@
   "name": "frontend",
   "version": "0.0.0",
   "scripts": {
-    "ng": "npx ng",
+    "ng": "./node_modules/.bin/ng",
     "prestart": "node scripts/set-env.js",
     "prebuild": "node scripts/set-env.js",
-    "start": "ng serve",
-    "build": "node scripts/set-env.js && npx ng build",
-    "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "start": "./node_modules/.bin/ng serve",
+    "build": "node scripts/set-env.js && ./node_modules/.bin/ng build",
+    "watch": "./node_modules/.bin/ng build --watch --configuration development",
+    "test": "./node_modules/.bin/ng test"
   },
   "private": true,
   "dependencies": {
